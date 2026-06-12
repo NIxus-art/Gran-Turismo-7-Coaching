@@ -1,0 +1,14 @@
+{
+  "name": "gt7-coach-monorepo",
+  "private": true,
+  "version": "1.0.0",
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "build:frontend": "npm --prefix frontend install && npm --prefix frontend run build",
+    "install:backend": "npm --prefix backend install",
+    "start:backend": "npm --prefix backend start"
+  }
+}
