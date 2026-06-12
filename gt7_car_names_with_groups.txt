@@ -1,0 +1,579 @@
+﻿Abarth | Abarth 1500 Biposto Bertone B.A.T 1 '52
+Abarth | Abarth 500 '09
+Abarth | FIAT Abarth 595 Esseesse '70
+Afeela | AFEELA 1 '26
+Afeela | AFEELA Prototype 2024
+Alfa Romeo | Alfa Romeo 155 2.5 V6 TI '93 (Gr.4)
+Alfa Romeo | Alfa Romeo 4C Gr.3 (Gr.3)
+Alfa Romeo | Alfa Romeo 4C Gr.3 Road Car
+Alfa Romeo | Alfa Romeo 4C Gr.4 (Gr.4)
+Alfa Romeo | Alfa Romeo 4C Launch Edition '14
+Alfa Romeo | Alfa Romeo 8C 2900B Touring Berlinetta '38
+Alfa Romeo | Alfa Romeo 8C Competizione '08
+Alfa Romeo | Alfa Romeo Giulia GTAm '20
+Alfa Romeo | Alfa Romeo Giulia Sprint GT Veloce '67
+Alfa Romeo | Alfa Romeo GIULIA TZ2 carrozzata da ZAGATO '65
+Alfa Romeo | Alfa Romeo MiTo 1.4 T Sport '09
+Alpine | Alpine A110 1600S '72
+Alpine | Alpine A110 Première Édition '17
+Alpine | Alpine A220 Race Car '68
+Alpine | Alpine Vision Gran Turismo
+Alpine | Alpine Vision Gran Turismo 2017 (Gr.1)
+Alpine | Alpine Vision Gran Turismo Race Mode
+AMG | Mercedes-AMG C 63 S '15
+AMG | Mercedes-AMG GT Black Series '20
+AMG | Mercedes-AMG GT R '17
+AMG | Mercedes-AMG GT S '15
+AMG | Mercedes-AMG GT Safety Car
+AMG | Mercedes-AMG GT3 '16 (Gr.3)
+AMG | Mercedes-AMG GT3 '20 (Gr.3)
+AMG | Mercedes-Benz 300 SEL 6.8 AMG '71
+AMG | Mercedes-Benz A 45 AMG 4MATIC '13
+AMG | Mercedes-Benz AMG Vision Gran Turismo
+AMG | Mercedes-Benz AMG Vision Gran Turismo Racing Series
+AMG | Mercedes-Benz SLS AMG '10
+AMG | Mercedes-Benz SLS AMG Gr.4 (Gr.4)
+AMG | Mercedes-Benz SLS AMG GT3 '11 (Gr.3)
+Amuse | Amuse NISMO 380RS Super Leggera
+Amuse | Amuse S2000 GT1 Turbo
+Aston Martin | Aston Martin DB11 '16
+Aston Martin | Aston Martin DB3S '53
+Aston Martin | Aston Martin DB5 '64
+Aston Martin | Aston Martin DBR9 GT1 '10 (Gr.3)
+Aston Martin | Aston Martin DP-100 Vision Gran Turismo
+Aston Martin | Aston Martin One-77 '11
+Aston Martin | Aston Martin V12 Vantage GT3 '12 (Gr.3)
+Aston Martin | Aston Martin V8 Vantage S '15
+Aston Martin | Aston Martin Valkyrie '21
+Aston Martin | Aston Martin Vantage '18
+Aston Martin | Aston Martin Vantage Gr.4 (Gr.4)
+Aston Martin | Aston Martin Vulcan '16
+Audi | Audi e-tron Vision Gran Turismo
+Audi | Audi R18 '16 (Gr.1)
+Audi | Audi R18 TDI '11 (Gr.1)
+Audi | Audi R8 4.2 FSI R tronic '07
+Audi | Audi R8 Coupé V10 plus '16
+Audi | Audi R8 LMS '15 (Gr.3)
+Audi | Audi R8 LMS Evo '19 (Gr.3)
+Audi | Audi RS 5 Turbo DTM '19 (Gr.2)
+Audi | Audi Sport quattro S1 Pikes Peak '87 (Gr.B)
+Audi | Audi TT Coupé 3.2 quattro '03
+Audi | Audi TT Cup '16 (Gr.4)
+Audi | Audi TTS Coupé '09
+Audi | Audi TTS Coupé '14
+Audi | Audi Vision Gran Turismo (Gr.1)
+Autobianchi | Autobianchi A112 Abarth '85
+BAC | BAC Mono '16
+BMW | BMW 3.0 CSL '71
+BMW | BMW 3.0 CSL '73
+BMW | BMW i3 '15
+BMW | BMW M Hybrid V8 '25 (Gr.1)
+BMW | BMW M2 Competition '18
+BMW | BMW M3 '89
+BMW | BMW M3 '97
+BMW | BMW M3 Coupé '03
+BMW | BMW M3 Coupé '07
+BMW | BMW M3 GT '11 (Gr.3)
+BMW | BMW M3 Sport Evolution '89
+BMW | BMW M4 Coupé '14
+BMW | BMW M4 Gr.4 (Gr.4)
+BMW | BMW M4 Safety Car
+BMW | BMW M6 GT3 Endurance Model '16 (Gr.3)
+BMW | BMW M6 GT3 Sprint Model '16 (Gr.3)
+BMW | BMW McLaren F1 GTR Race Car '97 (Gr.2)
+BMW | BMW Vision Gran Turismo
+BMW | BMW Z4 3.0i '03
+BMW | BMW Z4 GT3 '11 (Gr.3)
+BMW | BMW Z8 '01
+Bugatti | Bugatti Chiron '16
+Bugatti | Bugatti Veyron 16.4 '13
+Bugatti | Bugatti Veyron Gr.4 (Gr.4)
+Bugatti | Bugatti Vision Gran Turismo
+Bugatti | Bugatti Vision Gran Turismo (Gr.1) (Gr.1)
+BVLGARI | BVLGARI Aluminium Vision Gran Turismo
+Chaparral | Chaparral 2J '70
+Chaparral | Chevrolet Chaparral 2X Vision Gran Turismo
+Chevrolet | Chevrolet Camaro 1969 Race-Mod
+Chevrolet | Chevrolet Camaro SS '16
+Chevrolet | Chevrolet Camaro Z28 '69
+Chevrolet | Chevrolet Camaro ZL1 1LE Package '18
+Chevrolet | Chevrolet Chevelle SS 454 Sport Coupé '70
+Chevrolet | Chevrolet Corvette (C1) '58
+Chevrolet | Chevrolet Corvette C7 Gr.3 (Gr.3)
+Chevrolet | Chevrolet Corvette C7 Gr.3 Road Car
+Chevrolet | Chevrolet Corvette C7 Gr.4 (Gr.4)
+Chevrolet | Chevrolet Corvette C7 Stingray '14
+Chevrolet | Chevrolet Corvette C7 ZR1 '19
+Chevrolet | Chevrolet Corvette C8 Stingray '20
+Chevrolet | Chevrolet Corvette CX Concept '25
+Chevrolet | Chevrolet Corvette CX.R Vision Gran Turismo Concept
+Chevrolet | Chevrolet Corvette Sting Ray Sport Coupe (C2) '63
+Chevrolet | Chevrolet Corvette Stingray Convertible (C3) '69
+Chevrolet | Chevrolet Corvette Stingray L46 350 (C3) '69
+Chevrolet | Chevrolet Corvette Stingray Racer Concept '59
+Chevrolet | Chevrolet Corvette Z06 (C5) '01
+Chevrolet | Chevrolet Corvette ZR-1 (C4) '89
+Chevrolet | Chevrolet Corvette ZR1 (C6) '09
+Chris Holstrom Concepts | Chris Holstrom Concepts 1967 Chevy Nova
+Citroën | Citroën BX 19 TRS '87
+Citroën | Citroën DS 21 Pallas '70
+Citroën | GT by Citroën Gr.4 (Gr.4)
+Citroën | GT by Citroën Race Car (Gr.3) (Gr.3)
+Citroën | GT by Citroën Road Car
+Daihatsu | Daihatsu Copen Active Top '02
+Daihatsu | DAIHATSU COPEN RJ Vision Gran Turismo
+De Tomaso | De Tomaso Mangusta (Christian Dior)
+De Tomaso | De Tomaso Mangusta '69
+De Tomaso | De Tomaso Pantera '71
+DMC | DMC DeLorean S2 '04
+Dodge | Dodge Challenger R/T '70
+Dodge | Dodge Challenger SRT Demon '18
+Dodge | Dodge Charger R/T 426 Hemi '68
+Dodge | Dodge Charger SRT Hellcat '15
+Dodge | Dodge Charger SRT Hellcat Safety Car
+Dodge | Dodge SRT Tomahawk GTS-R Vision Gran Turismo
+Dodge | Dodge SRT Tomahawk S Vision Gran Turismo
+Dodge | Dodge SRT Tomahawk Vision Gran Turismo (Gr.1) (Gr.1)
+Dodge | Dodge SRT Tomahawk X Vision Gran Turismo
+Dodge | Dodge Super Bee '70
+Dodge | Dodge Viper Gr.4 (Gr.4)
+Dodge | Dodge Viper GTS '02
+Dodge | Dodge Viper GTS '13
+Dodge | Dodge Viper SRT GT3-R '15 (Gr.3)
+Dodge | Dodge Viper SRT10 Coupe '06
+DS Automobiles | DS 3 Racing '11
+Eckert's Rod & Custom | Eckert's Rod & Custom Mach Forty
+Ferrari | Enzo Ferrari '02
+Ferrari | Ferrari 250 GT Berlinetta passo corto '61
+Ferrari | Ferrari 250 GTO '62
+Ferrari | Ferrari 296 GT3 '23 (Gr.3)
+Ferrari | Ferrari 296 GTB '22
+Ferrari | Ferrari 308 GTB '75
+Ferrari | Ferrari 330 P4 '67
+Ferrari | Ferrari 365 GTB4 '71
+Ferrari | Ferrari 430 Scuderia '07
+Ferrari | Ferrari 458 Italia '09
+Ferrari | Ferrari 458 Italia Gr.4 (Gr.4)
+Ferrari | Ferrari 458 Italia GT3 '13 (Gr.3)
+Ferrari | Ferrari 499P '23 (Gr.1)
+Ferrari | Ferrari 500 Mondial Pinin Farina Coupe '54
+Ferrari | Ferrari 512 BB '76
+Ferrari | Ferrari 812 Superfast '17
+Ferrari | Ferrari Dino 246 GT '71
+Ferrari | Ferrari F12berlinetta '12
+Ferrari | Ferrari F40 '92
+Ferrari | Ferrari F430 '06
+Ferrari | Ferrari F50 '95
+Ferrari | Ferrari F8 Tributo '19
+Ferrari | Ferrari FXX K '14
+Ferrari | Ferrari GTO '84
+Ferrari | Ferrari LaFerrari '13
+Ferrari | Ferrari Testarossa '91
+Ferrari | Ferrari Vision Gran Turismo
+Fiat | FIAT 500 1.2 8V Lounge SS '08
+Fiat | FIAT 500 F '68
+Fiat | FIAT Panda 30 CL '85
+Ford | 1932 Ford Roadster
+Ford | Ford Escort RS Cosworth '92
+Ford | Ford F-150 SVT Raptor '11
+Ford | Ford Focus Gr.B Rally Car (Gr.B)
+Ford | Ford Focus RS '18
+Ford | Ford Focus ST '15
+Ford | Ford GT '06
+Ford | Ford GT '17
+Ford | Ford GT LM Race Car Spec II (Gr.3)
+Ford | Ford GT LM Spec II Test Car (Gr.3)
+Ford | Ford GT Race Car '18 (Gr.3)
+Ford | Ford GT40 Mark I '66
+Ford | Ford Mark IV Race Car '67
+Ford | Ford Mustang 2015 American Racer
+Ford | Ford Mustang Boss 429 '69
+Ford | Ford Mustang Gr.3 (Gr.3)
+Ford | Ford Mustang Gr.3 Road Car
+Ford | Ford Mustang Gr.4 (Gr.4)
+Ford | Ford Mustang Gr.B Rally Car (Gr.B)
+Ford | Ford Mustang GT Premium Fastback '15
+Ford | Ford Mustang Mach 1 '71
+Ford | Ford Shelby GT350R '16
+Ford | Ford Sierra RS 500 Cosworth '87
+Garage RCR | Garage RCR Civic
+Genesis | Genesis G70 3.3T AWD Prestige Package '22
+Genesis | Genesis G70 GR4 (Gr.4)
+Genesis | Genesis X GR3 (Gr.3)
+Genesis | Genesis X Gran Berlinetta Vision Gran Turismo Concept
+Genesis | Genesis X Gran Racer Vision Gran Turismo Concept (Gr.1)
+Gran Turismo | Gran Turismo F1500T-A
+Gran Turismo | Gran Turismo F3500-A
+Gran Turismo | Gran Turismo F3500-B
+Gran Turismo | Gran Turismo Racing Kart 125 Shifter
+Gran Turismo | Gran Turismo Red Bull X2014 Junior
+Gran Turismo | Gran Turismo Red Bull X2014 Standard
+Gran Turismo | Gran Turismo Red Bull X2019 25th Anniversary
+Gran Turismo | Gran Turismo Red Bull X2019 Competition
+GReddy | GReddy Fugu Z
+Greening Auto Company | Greening Auto Company Maverick
+Honda | Honda Beat '91
+Honda | Honda Civic Si Extra (EF) '87
+Honda | Honda Civic SiR･II (EG) '93
+Honda | Honda Civic Type R (EK) '97
+Honda | Honda Civic Type R (EK) '98
+Honda | Honda Civic Type R (EK) Touring Car
+Honda | Honda Civic Type R (FK2) '15
+Honda | Honda Civic Type R (FL5) '22
+Honda | Honda Civic Type R Limited Edition (FK8) '20
+Honda | Honda CR-V e:HEV EX・Black Edition '21
+Honda | Honda Fit Hybrid '14
+Honda | Honda Integra Type R (DC2) '95
+Honda | Honda Integra Type R (DC2) '98
+Honda | Honda N-ONE RS '22
+Honda | Honda NSX '17
+Honda | Honda NSX CONCEPT-GT '16 (Gr.2)
+Honda | Honda NSX Gr.3 (Gr.3)
+Honda | Honda NSX Gr.4 (Gr.4)
+Honda | Honda NSX Gr.B Rally Car (Gr.B)
+Honda | Honda NSX GT500 '00 (Gr.3)
+Honda | Honda NSX GT500 '08 (Gr.2)
+Honda | Honda NSX Type R '02
+Honda | Honda NSX Type R '92
+Honda | Honda Project 2&4 powered by RC213V
+Honda | Honda RA272 '65
+Honda | Honda S2000 '99
+Honda | Honda S660 '15
+Honda | Honda S800 '66
+Honda | Honda Sports Vision Gran Turismo
+Hyundai | Hyundai ELANTRA N '23
+Hyundai | Hyundai ELANTRA N TC '24 (Gr.4)
+Hyundai | Hyundai Genesis Coupe 3.8 Track '13
+Hyundai | Hyundai Genesis Gr.3 (Gr.3)
+Hyundai | Hyundai Genesis Gr.4 (Gr.4)
+Hyundai | Hyundai Genesis Gr.B Rally Car (Gr.B)
+Hyundai | Hyundai IONIQ 5 N '24
+Hyundai | HYUNDAI N 2025 Vision Gran Turismo
+Hyundai | HYUNDAI N 2025 Vision Gran Turismo (Gr.1) (Gr.1)
+Infiniti | INFINITI CONCEPT Vision Gran Turismo
+Italdesign | Italdesign EXENEO Vision Gran Turismo Off-road Mode
+Italdesign | Italdesign EXENEO Vision Gran Turismo Street Mode
+Jaguar | Jaguar D-type '54
+Jaguar | Jaguar E-type Coupé '61
+Jaguar | Jaguar F-type Gr.3 (Gr.3)
+Jaguar | Jaguar F-type Gr.4 (Gr.4)
+Jaguar | Jaguar F-type R Coupé '14
+Jaguar | Jaguar Vision Gran Turismo Coupé
+Jaguar | Jaguar Vision Gran Turismo Roadster
+Jaguar | Jaguar Vision Gran Turismo SV
+Jaguar | Jaguar XJ13 '66
+Jaguar | Jaguar XJ220 '92
+Jaguar | Jaguar XJR-9 '88 (Gr.1)
+Jeep | Jeep Willys MB '45
+KTM | KTM X-BOW R '12
+Lamborghini | Lambo V12 Vision Gran Turismo
+Lamborghini | Lamborghini Aventador LP 700-4 '11
+Lamborghini | Lamborghini Aventador LP 750-4 Superveloce '15
+Lamborghini | Lamborghini Countach 25th Anniversary '88
+Lamborghini | Lamborghini Countach LP400 '74
+Lamborghini | Lamborghini Diablo GT '00
+Lamborghini | Lamborghini Gallardo LP 560-4 '08
+Lamborghini | Lamborghini Huracán Gr.4 (Gr.4)
+Lamborghini | Lamborghini Huracán GT3 '15 (Gr.3)
+Lamborghini | Lamborghini Huracán LP 610-4 '15
+Lamborghini | Lamborghini Miura P400 Bertone Prototype '67
+Lamborghini | Lamborghini Murciélago LP 640 '09
+Lamborghini | Lamborghini Urus '18
+Lamborghini | Lamborghini Veneno '14
+Lancia | Lancia Delta HF Integrale Evoluzione '91
+Lancia | Lancia Delta HF Integrale Rally Car '92 (Gr.B)
+Lancia | Lancia Stratos '73
+Lexus | Lexus LC500 '17
+Lexus | Lexus LFA '10
+Lexus | LEXUS LF-LC GT "Vision Gran Turismo"
+Lexus | Lexus RC F '14
+Lexus | Lexus RC F Gr.4 (Gr.4)
+Lexus | Lexus RC F GT3 '17 (Gr.3)
+Lexus | Lexus RC F GT3 prototype '16 (Gr.3)
+Lexus | Lexus RC F GT500 '16 (Gr.2)
+Lexus | Lexus SC430 GT500 '08 (Gr.2)
+Maserati | Maserati A6GCS/53 Spyder '54
+Maserati | Maserati GranTurismo S '08
+Maserati | Maserati MC20 '20
+Maserati | Maserati Merak SS '80
+Mazda | Mazda 787B '91 (Gr.1)
+Mazda | Mazda Atenza Gr.3 (Gr.3)
+Mazda | Mazda Atenza Gr.3 Road Car
+Mazda | Mazda Atenza Gr.4 (Gr.4)
+Mazda | Mazda Atenza Sedan XD L Package '15
+Mazda | Mazda CX-30 X Smart Edition '21
+Mazda | Mazda Demio XD Touring '15
+Mazda | Mazda Eunos Roadster (NA Special Package) '89
+Mazda | Mazda ɛ̃fini RX-7 Type R (FD) '91
+Mazda | Mazda LM55 Vision Gran Turismo
+Mazda | Mazda LM55 Vision Gran Turismo (Gr.1) (Gr.1)
+Mazda | Mazda Roadster NR-A (ND) '22
+Mazda | Mazda Roadster S (ND) '15
+Mazda | Mazda Roadster Touring Car
+Mazda | Mazda RX500 '70
+Mazda | Mazda RX-7 GT-X (FC) '90
+Mazda | Mazda RX-7 Spirit R Type A (FD) '02
+Mazda | Mazda RX-8 Spirit R '12
+Mazda | Mazda RX-VISION '15
+Mazda | MAZDA RX-VISION GT3 CONCEPT (Gr.3)
+Mazda | MAZDA RX-VISION GT3 CONCEPT Stealth Model (Gr.3)
+Mazda | MAZDA SPIRIT RACING ROADSTER 12R '25
+Mazda | MAZDA3 Gr.4 (Gr.4)
+Mazda | MAZDA3 X Burgundy Selection '19
+McLaren | McLaren 650S Coupe '14
+McLaren | McLaren 650S Gr.4 (Gr.4)
+McLaren | McLaren 650S GT3 '15 (Gr.3)
+McLaren | McLaren F1 '94
+McLaren | McLaren F1 GTR - BMW '95 (Gr.3)
+McLaren | McLaren MP4/4 '88
+McLaren | McLaren MP4-12C '10
+McLaren | McLaren P1 GTR '16
+McLaren | McLaren Ultimate Vision Gran Turismo
+McLaren | McLaren Ultimate Vision Gran Turismo (Gr.1) (Gr.1)
+Mercedes-Benz | Mercedes-Benz 190 E 2.5-16 Evolution II '91
+Mercedes-Benz | Mercedes-Benz 300 SL (W194) '52
+Mercedes-Benz | Mercedes-Benz 300 SL Coupé '54
+Mercedes-Benz | Mercedes-Benz CLK-LM '98 (Gr.2)
+Mercedes-Benz | Mercedes-Benz S Barker Tourer '29
+Mercedes-Benz | Mercedes-Benz SLR McLaren '09
+Mercedes-Benz | Mercedes-Benz Unimog Type 411 '62
+Mercedes-Benz | Mercedes-Benz W 196 R '55
+Mercedes-Benz | Sauber Mercedes C9 '89 (Gr.1)
+Mine's | Mine's BNR34 GT-R N1 base
+Mini | MINI Clubman Vision Gran Turismo
+Mini | MINI Cooper S '05
+Mini | Mini-Cooper 'S' '65
+Mitsubishi | Mitsubishi Concept XR-PHEV EVOLUTION Vision Gran Turismo
+Mitsubishi | Mitsubishi FTO GP Version R '97
+Mitsubishi | Mitsubishi GTO Twin Turbo '91
+Mitsubishi | Mitsubishi Lancer Evolution Final Edition '15
+Mitsubishi | Mitsubishi Lancer Evolution Final Edition Gr.3 (Gr.3)
+Mitsubishi | Mitsubishi Lancer Evolution Final Edition Gr.4 (Gr.4)
+Mitsubishi | Mitsubishi Lancer Evolution Final Edition Gr.B Rally Car (Gr.B)
+Mitsubishi | Mitsubishi Lancer Evolution Final Edition Gr.B Road Car
+Mitsubishi | Mitsubishi Lancer Evolution III GSR '95
+Mitsubishi | Mitsubishi Lancer Evolution IV GSR '96
+Mitsubishi | Mitsubishi Lancer Evolution IX MR GSR '06
+Mitsubishi | Mitsubishi Lancer Evolution V GSR '98
+Mitsubishi | Mitsubishi Lancer Evolution VI GSR T.M. EDITION Special Color Package '99
+Mitsubishi | Mitsubishi Lancer Evolution VIII MR GSR '04
+Nismo | NISMO 400R '95
+Nismo | NISMO R34 GT-R Z-tune '05
+Nissan | Nissan 180SX Type X '96
+Nissan | NISSAN CONCEPT 2020 Vision Gran Turismo
+Nissan | Nissan Fairlady 240ZG (HS30) '71
+Nissan | Nissan Fairlady Z (Z34) '08
+Nissan | Nissan Fairlady Z 300ZX TwinTurbo 2seater (Z32) '89
+Nissan | Nissan Fairlady Z 432 '69
+Nissan | Nissan Fairlady Z Version S (Z33) '07
+Nissan | Nissan GT-R Gr.4 (Gr.4)
+Nissan | Nissan GT-R Gr.B Rally Car (Gr.B)
+Nissan | Nissan GT-R GT500 '08 (Gr.2)
+Nissan | Nissan GT-R GT500 '99 (Gr.3)
+Nissan | Nissan GT-R LM NISMO '15 (Gr.1)
+Nissan | Nissan GT-R NISMO (R32) '90
+Nissan | Nissan GT-R NISMO '17
+Nissan | Nissan GT-R NISMO GT3 '13 (Gr.3)
+Nissan | Nissan GT-R NISMO GT3 '18 (Gr.3)
+Nissan | Nissan GT-R NISMO GT500 '16 (Gr.2)
+Nissan | Nissan GT-R Premium edition '17
+Nissan | Nissan GT-R Premium edition T-spec '24
+Nissan | Nissan GT-R Safety Car
+Nissan | Nissan Qashqai Tekna 190 2wd e-Power '22
+Nissan | Nissan R92CP '92 (Gr.1)
+Nissan | Nissan Sileighty '98
+Nissan | Nissan Silvia K's Aero (S14) '96
+Nissan | Nissan Silvia K's Dia Selection (S13) '90
+Nissan | Nissan Silvia K's Type S (S14) '94
+Nissan | Nissan Silvia Q's (S13) '88
+Nissan | Nissan Silvia spec-R Aero (S15) '02
+Nissan | Nissan Silvia spec-R Aero (S15) Touring Car (Gr.4)
+Nissan | Nissan Skyline 2000GT-R (KPGC110) '73
+Nissan | Nissan Skyline GT-R GP-Tuned (KPGC10)
+Nissan | Nissan Skyline GT-R V･spec (R33) '97
+Nissan | Nissan Skyline GT-R V･spec II (R32) '94
+Nissan | Nissan Skyline GT-R V･spec II Nür (R34) '02
+Nissan | Nissan Skyline GTS-R (R31) '87
+Nissan | Nissan Skyline Hard Top 2000GT-R (KPGC10) '70
+Nissan | Nissan Skyline Super Silhouette Group 5 '84 (Gr.3)
+Nissan | Nissan Z Performance '23
+Opel | Opel Corsa GSE Vision Gran Turismo
+Pagani | Pagani Huayra '13
+Pagani | Pagani Zonda R '09
+Peugeot | Peugeot 205 GTI '88
+Peugeot | Peugeot 205 Turbo 16 Evolution 2 '86 (Gr.B)
+Peugeot | Peugeot 208 GTi by Peugeot Sport '14
+Peugeot | Peugeot 908 HDi FAP '10 (Gr.1)
+Peugeot | Peugeot 9X8 '25 (Gr.1)
+Peugeot | Peugeot L500R HYbrid Vision Gran Turismo, 2017
+Peugeot | Peugeot L750R HYbrid Vision Gran Turismo, 2017 (Gr.1)
+Peugeot | Peugeot RCZ Gr.3 (Gr.3)
+Peugeot | Peugeot RCZ Gr.3 Road Car
+Peugeot | Peugeot RCZ Gr.4 (Gr.4)
+Peugeot | Peugeot RCZ Gr.B Rally Car (Gr.B)
+Peugeot | Peugeot RCZ GT Line '15
+Peugeot | Peugeot SUV 2008 Allure '21
+Peugeot | PEUGEOT Vision Gran Turismo
+Peugeot | PEUGEOT Vision Gran Turismo (Gr.3) (Gr.3)
+Plymouth | Plymouth Superbird '70
+Plymouth | Plymouth XNR Ghia Roadster '60
+Polestar | Polestar 5 Performance '26
+Pontiac | Pontiac Firebird Trans Am '78
+Pontiac | Pontiac GTO 'The Judge' '69
+Porsche | Porsche 356 A/1500 GS Carrera '56
+Porsche | Porsche 356 A/1500 GS GT Carrera Speedster '56
+Porsche | Porsche 911 Carrera RS (901) '73
+Porsche | Porsche 911 Carrera RS (964) '92
+Porsche | Porsche 911 Carrera RS (993) '95
+Porsche | Porsche 911 Carrera RS Club Sport (993) '95
+Porsche | Porsche 911 GT1 Strassenversion '97
+Porsche | Porsche 911 GT3 (996) '01
+Porsche | Porsche 911 GT3 (997) '09
+Porsche | Porsche 911 GT3 R (992) '22 (Gr.3)
+Porsche | Porsche 911 GT3 RS (991) '16
+Porsche | Porsche 911 GT3 RS (992) '22
+Porsche | Porsche 911 RSR (991) '17 (Gr.3)
+Porsche | Porsche 911 Turbo (930) '81
+Porsche | Porsche 911 Turbo Rally (930)
+Porsche | Porsche 911 Turbo S (992) '20
+Porsche | Porsche 911 Turbo S Leichtbau (964) '93
+Porsche | Porsche 911 Turbo S Safety Car (992)
+Porsche | Porsche 917 LIVING LEGEND
+Porsche | Porsche 917K '70
+Porsche | Porsche 918 Spyder '13
+Porsche | Porsche 919 Hybrid '16 (Gr.1)
+Porsche | Porsche 959 '87
+Porsche | Porsche 962 C '88 (Gr.1)
+Porsche | Porsche 963 '24 (Gr.1)
+Porsche | Porsche Carrera GT '04
+Porsche | Porsche Carrera GTS (904) '64
+Porsche | Porsche Cayman GT4 '16
+Porsche | Porsche Cayman GT4 Clubsport '16 (Gr.4)
+Porsche | Porsche Mission X '23
+Porsche | Porsche Spyder type 550/1500RS '55
+Porsche | Porsche Taycan Turbo S '19
+Porsche | Porsche Vision Gran Turismo
+Porsche | Porsche Vision Gran Turismo Spyder
+Radical | Radical SR3 SL '13
+RE Amemiya | RE Amemiya FD3S RX-7
+Renault | Renault Avantime 3.0 V6 24V '02
+Renault | Renault Captur S Edition TCe 140 '21
+Renault | Renault Espace F1 '95
+Renault | Renault Kangoo 1.4 '01
+Renault | Renault R4 GTL '85
+Renault | Renault R5 Turbo '80
+Renault | Renault R8 Gordini '66
+Renault | Renault Sport Clio R.S. 220 EDC Trophy '15
+Renault | Renault Sport Clio R.S. 220 EDC Trophy '16
+Renault | Renault Sport Clio V6 24V '00
+Renault | Renault Sport Mégane Gr.4 (Gr.4)
+Renault | Renault Sport Mégane R.S. Trophy '11
+Renault | Renault Sport Mégane R.S. Trophy Safety Car
+Renault | Renault Sport Mégane Trophy '11 (Gr.4)
+Renault | Renault Sport R.S.01 '16
+Renault | Renault Sport R.S.01 GT3 '16 (Gr.3)
+Renault | Renault Twingo '93
+Roadster Shop | Roadster Shop Rampage
+RUF | RUF CTR3 '07
+RUF | RUF RGT 4.2 '16
+Shelby | Shelby Cobra 427 '66
+Shelby | Shelby Cobra Daytona Coupe '64
+Shelby | Shelby G.T.350 '65
+Subaru | Subaru BRZ Drift Car '17
+Subaru | Subaru BRZ GT300 '21 (Gr.3)
+Subaru | Subaru BRZ S '15
+Subaru | Subaru BRZ S '21
+Subaru | Subaru BRZ STI Sport '18
+Subaru | Subaru Impreza 22B-STi Version '98
+Subaru | Subaru Impreza Coupe WRX Type R STi Version VI '99
+Subaru | Subaru Impreza Rally Car '98 (Gr.B)
+Subaru | Subaru Impreza Sedan WRX STi '04
+Subaru | SUBARU VIZIV GT Vision Gran Turismo
+Subaru | Subaru WRX Gr.3 (Gr.3)
+Subaru | Subaru WRX Gr.4 (Gr.4)
+Subaru | Subaru WRX Gr.B Rally Car (Gr.B)
+Subaru | Subaru WRX Gr.B Road Car
+Subaru | Subaru WRX STI Isle of Man Time Attack Car '16
+Subaru | Subaru WRX STI Type S '14
+Super Formula | Dallara SF19 Super Formula / Honda '19
+Super Formula | Dallara SF19 Super Formula / Toyota '19
+Super Formula | Dallara SF23 Super Formula / Honda '23
+Super Formula | Dallara SF23 Super Formula / Toyota '23
+Suzuki | Suzuki Cappuccino (EA11R) '91
+Suzuki | Suzuki Carry KC '12
+Suzuki | Suzuki Jimny Sierra JC '18
+Suzuki | Suzuki Jimny XC '18
+Suzuki | Suzuki Swift Sport '07
+Suzuki | Suzuki Swift Sport '17
+Suzuki | Suzuki Swift Sport KATANA Edition Gr.4 (Gr.4)
+Suzuki | Suzuki V6 Escudo Pikes Peak Special '98
+Suzuki | SUZUKI Vision Gran Turismo
+Suzuki | SUZUKI Vision Gran Turismo (Gr.3 Version) (Gr.3)
+Škoda | Škoda Vision Gran Turismo
+Tesla | Tesla Model 3 Performance '23
+Tesla | Tesla Model S Signature Performance '12
+Toyota | Toyota 2000GT '67
+Toyota | TOYOTA 86 Gr.4 (Gr.4)
+Toyota | TOYOTA 86 Gr.B Rally Car (Gr.B)
+Toyota | Toyota 86 GRMN '16
+Toyota | TOYOTA 86 GT '15
+Toyota | TOYOTA 86 GT"Limited" '16
+Toyota | Toyota AE86 Levin D-Tuned
+Toyota | Toyota Alphard Executive Lounge '18
+Toyota | Toyota Ambulance Himedic '21
+Toyota | Toyota Aqua S '11
+Toyota | Toyota Celica GT-FOUR (ST205) '94
+Toyota | Toyota Celica GT-FOUR Rally Car (ST205) '95 (Gr.B)
+Toyota | Toyota C-HR S '18
+Toyota | Toyota Corolla Levin 3door 1600GT APEX (AE86) '83
+Toyota | Toyota Crown Athlete G '13
+Toyota | Toyota Crown Athlete G Safety Car
+Toyota | Toyota FT-1
+Toyota | Toyota FT-1 Vision Gran Turismo
+Toyota | Toyota FT-1 Vision Gran Turismo (Gr.3) (Gr.3)
+Toyota | Toyota GR Corolla MORIZO Edition '22
+Toyota | Toyota GR Supra Race Car '19 (Gr.4)
+Toyota | Toyota GR Supra Racing Concept '18 (Gr.3)
+Toyota | Toyota GR Supra RZ '19
+Toyota | Toyota GR Supra RZ '20
+Toyota | Toyota GR Yaris 1st Edition RZ "High Performance" '20
+Toyota | TOYOTA GR010 HYBRID '21 (Gr.1)
+Toyota | Toyota GR86 RZ '21
+Toyota | Toyota GT-One (TS020) '99 (Gr.2)
+Toyota | Toyota Hiace Van DX '16
+Toyota | Toyota Land Cruiser FJ40V '74
+Toyota | Toyota MR2 GT-S '97
+Toyota | Toyota Prius G '09
+Toyota | Toyota RAV4 Adventure '20
+Toyota | TOYOTA S-FR '15
+Toyota | TOYOTA S-FR Racing Concept '16
+Toyota | Toyota Sports 800 '65
+Toyota | Toyota Sprinter Trueno 3door 1600GT APEX (AE86) '83
+Toyota | Toyota Supra 3.0GT Turbo A '88
+Toyota | Toyota Supra GT Road Car (JZA80)
+Toyota | Toyota Supra GT500 '97 (Gr.3)
+Toyota | Toyota Supra RZ '97
+Toyota | Toyota Trueno 3door 1600GT APEX (AE86 Shuichi Shigeno Version)
+Toyota | Toyota TS030 Hybrid '12 (Gr.1)
+Toyota | Toyota TS050 - Hybrid '16 (Gr.1)
+Toyota | Toyota Tundra TRD Pro '19
+TVR | TVR Tuscan Speed 6 '00
+Volkswagen | Volkswagen 1200 '66
+Volkswagen | Volkswagen Beetle 1966 Desert Racer
+Volkswagen | Volkswagen Beetle Gr.3 (Gr.3)
+Volkswagen | Volkswagen Golf I GTI '83
+Volkswagen | Volkswagen Golf VII GTI '14
+Volkswagen | Volkswagen GTI Roadster Vision Gran Turismo
+Volkswagen | Volkswagen GTI Supersport Vision Gran Turismo
+Volkswagen | Volkswagen GTI Vision Gran Turismo (Gr.3) (Gr.3)
+Volkswagen | Volkswagen ID.R '19
+Volkswagen | Volkswagen Polo GTI '14
+Volkswagen | Volkswagen Sambabus Typ 2 (T1) '62
+Volkswagen | Volkswagen Scirocco Gr.4 (Gr.4)
+Volkswagen | Volkswagen Scirocco R '10
+Volvo | Volvo 240 SE Estate '93
+Volvo | Volvo V40 T5 R-Design '13
+Wicked Fabrication | Wicked Fabrication GT 51
+Xiaomi | Xiaomi SU7 Ultra '25
+Yangwang | Yangwang U9 '24
+Zagato | IsoRivolta Zagato Vision Gran Turismo

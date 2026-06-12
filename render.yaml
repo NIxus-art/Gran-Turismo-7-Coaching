@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: gt7-coach-api
+    env: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: ENABLE_UDP_TELEMETRY
+        value: "false"
+      - key: ALLOWED_ORIGIN
+        value: https://gt7-coach-web.onrender.com
+
+  - type: static
+    name: gt7-coach-web
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: https://gt7-coach-api.onrender.com
+      - key: VITE_WS_URL
+        value: wss://gt7-coach-api.onrender.com/ws
