@@ -912,6 +912,40 @@
             text-transform: uppercase;
             letter-spacing: 0.08em;
         }
+        .tune-category-switcher {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 12px 0 8px;
+        }
+        .tune-category-chip {
+            padding: 10px 14px;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.05);
+            color: #c6ced8;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.18s ease;
+        }
+        .tune-category-chip:hover {
+            border-color: rgba(255, 217, 61, 0.34);
+            color: #fff3b1;
+        }
+        .tune-category-chip.active {
+            background: linear-gradient(180deg, rgba(255, 217, 61, 0.95), rgba(226, 184, 54, 0.92));
+            color: #11151b;
+            border-color: rgba(255, 217, 61, 0.95);
+            box-shadow: 0 8px 20px rgba(255, 217, 61, 0.16);
+        }
+        .tune-category-note {
+            margin: 6px 0 10px;
+            color: #98a2b3;
+            font-size: 13px;
+        }
         .gt7-tune-layout {
             display: grid;
             grid-template-columns: minmax(230px, 280px) minmax(0, 1fr);
@@ -1000,6 +1034,26 @@
             color: #aeb7c2;
             letter-spacing: 0.08em;
             text-transform: uppercase;
+        }
+        .gt7-verify-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 14px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.04);
+            color: #c8d0d9;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+        .gt7-verify-badge.verified {
+            border-color: rgba(102, 230, 164, 0.35);
+            background: rgba(102, 230, 164, 0.08);
+            color: #b7ffd4;
         }
         .gt7-rating-row {
             display: grid;
@@ -2687,6 +2741,1260 @@ Zagato | IsoRivolta Zagato Vision Gran Turismo
             };
         }
 
+        function parseModelYear(name) {
+            const match = String(name || '').match(/'(\d{2})/);
+            if (!match) return null;
+            const shortYear = Number(match[1]);
+            return shortYear >= 50 ? 1900 + shortYear : 2000 + shortYear;
+        }
+
+        function deriveTransmissionProfile(make, name, category, powerNum, weightNum, drive) {
+            const fullName = `${make} ${name}`.toLowerCase();
+            const year = parseModelYear(name);
+            const isRaceCar = category.startsWith('Gr.') || category === 'Gr.X';
+            const isClassic = Number.isFinite(year) && year < 1985;
+            const isModern = Number.isFinite(year) && year >= 2016;
+            const isElectric = /(ev\b|electric|tesla|taycan|ioniq|leaf|xiaomi|yangwang|model s|model 3|model x)/.test(fullName);
+            const isTruck = /(truck|pickup)/.test(fullName);
+
+            let maxGears = 6;
+            if (category === 'Gr.1') maxGears = 7;
+            else if (category === 'Gr.2') maxGears = 6;
+            else if (category === 'Gr.3') maxGears = 6;
+            else if (category === 'Gr.4') maxGears = 6;
+            else if (category === 'Gr.B') maxGears = 5;
+            else if (category === 'Gr.X') maxGears = powerNum > 850 ? 7 : 6;
+            else if (isTruck) maxGears = 6;
+            else if (isElectric) maxGears = powerNum > 500 ? 2 : 1;
+            else if (isClassic) maxGears = year < 1970 ? 4 : 5;
+            else if (powerNum < 180 && drive === 'FWD') maxGears = 5;
+            else if (isModern && powerNum > 520) maxGears = 7;
+            else if (isModern && weightNum > 1500) maxGears = 8;
+            else if (powerNum > 380) maxGears = 7;
+            else if (year && year < 2000) maxGears = 6;
+
+            const gearboxStyle = isElectric
+                ? (maxGears === 1 ? 'Single-speed electric drive' : 'Two-speed electric performance drive')
+                : isRaceCar
+                    ? `${maxGears}-speed close-ratio race gearbox`
+                    : isClassic
+                        ? `${maxGears}-speed classic manual gearbox`
+                        : `${maxGears}-speed performance gearbox`;
+
+            return {
+                maxGears,
+                gearboxStyle
+            };
+        }
+
+        const officialGearboxTable = {
+            // Official GT7 gearbox entries can be added here using "Make|Name" keys.
+        };
+
+        function createGt7GearboxEntry(maxGears) {
+            return {
+                maxGears,
+                gearboxStyle: maxGears === 1
+                    ? '1-speed GT7 EV transmission'
+                    : `${maxGears}-speed GT7 transmission`,
+                sourceLabel: 'GT7 in-game gear count verified from GTPlus car list (Gears column)'
+            };
+        }
+
+        const gt7VerifiedGearboxTable = {
+            "AFEELA|AFEELA Prototype 2024": createGt7GearboxEntry(1),
+            "AFEELA|AFEELA 1 '26": createGt7GearboxEntry(1),
+            "Alfa Romeo|Giulia GTAm '20": createGt7GearboxEntry(8),
+            "Alfa Romeo|Giulia Sprint GT Veloce '67": createGt7GearboxEntry(5),
+            "Alfa Romeo|GIULIA TZ2 carrozzata da ZAGATO '65": createGt7GearboxEntry(5),
+            "Alfa Romeo|Alfa Romeo 4C Gr.3": createGt7GearboxEntry(6),
+            "Alfa Romeo|Alfa Romeo 4C Gr.3 Road Car": createGt7GearboxEntry(6),
+            "Alpine|A110 '17": createGt7GearboxEntry(7),
+            "Alpine|A110 '72": createGt7GearboxEntry(5),
+            "Alpine|A220 Race Car '68": createGt7GearboxEntry(5),
+            "Alpine|Alpine VGT '17": createGt7GearboxEntry(7),
+            "Alpine|Alpine VGT Race": createGt7GearboxEntry(7),
+            "AMG|A 45 AMG '13": createGt7GearboxEntry(7),
+            "AMG|Mercedes-AMG C 63 S '15": createGt7GearboxEntry(7),
+            "AMG|Mercedes-AMG GT S '15": createGt7GearboxEntry(7),
+            "AMG|Mercedes-AMG GT R '17": createGt7GearboxEntry(7),
+            "AMG|Mercedes-AMG GT Black Series '20": createGt7GearboxEntry(7),
+            "AMG|Mercedes-AMG GT Safety Car": createGt7GearboxEntry(7),
+            "AMG|Mercedes-AMG GT3 '16": createGt7GearboxEntry(6),
+            "AMG|SLS AMG '10": createGt7GearboxEntry(7),
+            "AMG|SLS AMG GT3 '11": createGt7GearboxEntry(7),
+            "Aston Martin|DB11 '16": createGt7GearboxEntry(8),
+            "Aston Martin|Aston Martin DP-100 Vision Gran Turismo": createGt7GearboxEntry(8),
+            "Aston Martin|Aston Martin V12 Vantage GT3 '12": createGt7GearboxEntry(6),
+            "Aston Martin|Aston Martin V8 Vantage S '15": createGt7GearboxEntry(6),
+            "Aston Martin|Vantage '18": createGt7GearboxEntry(8),
+            "Aston Martin|Valkyrie '21": createGt7GearboxEntry(7),
+            "Aston Martin|DB5 '64": createGt7GearboxEntry(5),
+            "Audi|R8 Coupé V10 plus '16": createGt7GearboxEntry(7),
+            "Audi|Audi VGT": createGt7GearboxEntry(7),
+            "Audi|TTS Coupé '14": createGt7GearboxEntry(6),
+            "Audi|TT Cup '16": createGt7GearboxEntry(6),
+            "Audi|R8 4.2 '07": createGt7GearboxEntry(6),
+            "Audi|R8 LMS '15": createGt7GearboxEntry(6),
+            "Audi|R8 LMS Evo '19": createGt7GearboxEntry(6),
+            "Audi|R18 TDI '11": createGt7GearboxEntry(6),
+            "Audi|R18 '16": createGt7GearboxEntry(6),
+            "Audi|RS 5 Turbo DTM '19": createGt7GearboxEntry(6),
+            "Audi|Sport quattro S1 Pikes Peak '87": createGt7GearboxEntry(6),
+            "Audi|TT Coupé 3.2 quattro '03": createGt7GearboxEntry(6),
+            "Audi|TTS Coupé '09": createGt7GearboxEntry(6),
+            "BMW|M2 Competition '18": createGt7GearboxEntry(7),
+            "BMW|M4 '14": createGt7GearboxEntry(7),
+            "BMW|M3 '97": createGt7GearboxEntry(6),
+            "BMW|M3 '03": createGt7GearboxEntry(6),
+            "BMW|M3 '07": createGt7GearboxEntry(6),
+            "BMW|M3 GT '11": createGt7GearboxEntry(6),
+            "BMW|BMW M6 GT3 Sprint Model '16": createGt7GearboxEntry(6),
+            "BMW|McLaren F1 GTR Race Car '97": createGt7GearboxEntry(6),
+            "BMW|BMW VGT": createGt7GearboxEntry(6),
+            "BMW|Z4 3.0i '03": createGt7GearboxEntry(6),
+            "BMW|Z4 GT3 '11": createGt7GearboxEntry(6),
+            "BMW|Z8 '01": createGt7GearboxEntry(6),
+            "BMW|M3 '89": createGt7GearboxEntry(5),
+            "BMW|3.0 CSL '71": createGt7GearboxEntry(4),
+            "Chevrolet|Corvette C8 '20": createGt7GearboxEntry(8),
+            "Chevrolet|Camaro SS '16": createGt7GearboxEntry(6),
+            "Chevrolet|Camaro ZL1 1LE Package '18": createGt7GearboxEntry(6),
+            "Chevrolet|Corvette ZR-1 (C4) '89": createGt7GearboxEntry(6),
+            "Chevrolet|Corvette ZR1 (C6) '09": createGt7GearboxEntry(6),
+            "Chevrolet|Corvette Z06 (C5) '01": createGt7GearboxEntry(6),
+            "Chevrolet|Corvette C7 '14": createGt7GearboxEntry(6),
+            "Chevrolet|Corvette C7 Gr.3": createGt7GearboxEntry(6),
+            "Chevrolet|Camaro 1969 Race-Mod": createGt7GearboxEntry(6),
+            "Chevrolet|Camaro Z28 '69": createGt7GearboxEntry(4),
+            "Chevrolet|Corvette (C1) '58": createGt7GearboxEntry(4),
+            "Chevrolet|Corvette (C2) '63": createGt7GearboxEntry(4),
+            "Chevrolet|Corvette Stingray (C3) '69": createGt7GearboxEntry(4),
+            "Chevrolet|Chevelle SS 454 '70": createGt7GearboxEntry(4),
+            "Chaparral|2J '70": createGt7GearboxEntry(3),
+            "Daihatsu|Copen '02": createGt7GearboxEntry(5),
+            "Dodge|Challenger SRT Demon '18": createGt7GearboxEntry(8),
+            "Dodge|Charger SRT Hellcat '15": createGt7GearboxEntry(8),
+            "Dodge|Charger SRT Hellcat Safety Car": createGt7GearboxEntry(8),
+            "Dodge|Viper GTS '02": createGt7GearboxEntry(6),
+            "Dodge|Viper GTS '13": createGt7GearboxEntry(6),
+            "Dodge|Viper SRT GT3-R '15": createGt7GearboxEntry(6),
+            "Dodge|Viper Gr.4": createGt7GearboxEntry(6),
+            "Dodge|Charger R/T 426 Hemi '68": createGt7GearboxEntry(4),
+            "Dodge|Super Bee '70": createGt7GearboxEntry(4),
+            "Ferrari|Ferrari VGT": createGt7GearboxEntry(8),
+            "Ferrari|430 Scuderia '07": createGt7GearboxEntry(6),
+            "Ferrari|Enzo Ferrari '02": createGt7GearboxEntry(6),
+            "Ferrari|F50 '95": createGt7GearboxEntry(6),
+            "Ferrari|308 GTB '75": createGt7GearboxEntry(5),
+            "Ferrari|330 P4 '67": createGt7GearboxEntry(5),
+            "Ferrari|365 GTB4 '71": createGt7GearboxEntry(5),
+            "Ferrari|512 BB '76": createGt7GearboxEntry(5),
+            "Ferrari|Dino 246 GT '71": createGt7GearboxEntry(5),
+            "Ferrari|Testarossa '91": createGt7GearboxEntry(5),
+            "Ford|F-150 SVT Raptor '11": createGt7GearboxEntry(6),
+            "Ford|Focus ST '15": createGt7GearboxEntry(6),
+            "Ford|Focus Gr.B Rally Car": createGt7GearboxEntry(6),
+            "Ford|Ford GT '06": createGt7GearboxEntry(6),
+            "Ford|Ford GT LM Race Car Spec II": createGt7GearboxEntry(6),
+            "Ford|Ford GT LM Spec II Test Car": createGt7GearboxEntry(6),
+            "Ford|Mustang Gr.4": createGt7GearboxEntry(6),
+            "Ford|Mustang Gr.3": createGt7GearboxEntry(6),
+            "Ford|Shelby GT350R '16": createGt7GearboxEntry(6),
+            "Ford|Sierra RS 500 Cosworth '87": createGt7GearboxEntry(5),
+            "Ford|GT40 Mark I '66": createGt7GearboxEntry(4),
+            "Ford|Mark IV Race Car '67": createGt7GearboxEntry(4),
+            "Ford|Mustang Boss 429 '69": createGt7GearboxEntry(4),
+            "Genesis|Genesis X Gran Berlinetta VGT Concept": createGt7GearboxEntry(8),
+            "Genesis|Genesis X Gran Racer VGT Concept": createGt7GearboxEntry(8),
+            "Genesis|Genesis X GR3": createGt7GearboxEntry(6),
+            "Genesis|G70 GR4": createGt7GearboxEntry(6),
+            "Gran Turismo|Racing Kart 125 Shifter": createGt7GearboxEntry(6),
+            "Gran Turismo|F1500T-A": createGt7GearboxEntry(5),
+            "Honda|NSX '17": createGt7GearboxEntry(9),
+            "Honda|Honda Sports VGT": createGt7GearboxEntry(8),
+            "Honda|Civic Type R (EK) Touring Car": createGt7GearboxEntry(6),
+            "Honda|Civic Type R (FL5) '22": createGt7GearboxEntry(6),
+            "Honda|Civic Type R Limited Edition (FK8) '20": createGt7GearboxEntry(6),
+            "Honda|NSX Type R '02": createGt7GearboxEntry(6),
+            "Honda|NSX Gr.B Rally Car": createGt7GearboxEntry(6),
+            "Honda|NSX GT500 '00": createGt7GearboxEntry(6),
+            "Honda|2&4 powered by RC213V": createGt7GearboxEntry(6),
+            "Honda|RA272 '65": createGt7GearboxEntry(6),
+            "Honda|S660 '15": createGt7GearboxEntry(6),
+            "Honda|N-ONE RS '22": createGt7GearboxEntry(6),
+            "Honda|S2000 '99": createGt7GearboxEntry(6),
+            "Honda|Beat '91": createGt7GearboxEntry(5),
+            "Honda|Civic SiR•II (EG) '93": createGt7GearboxEntry(5),
+            "Honda|Civic Type R (EK) '97": createGt7GearboxEntry(5),
+            "Honda|Civic Type R (EK) '98": createGt7GearboxEntry(5),
+            "Honda|Integra Type R (DC2) '95": createGt7GearboxEntry(5),
+            "Honda|Integra Type R (DC2) '98": createGt7GearboxEntry(5),
+            "Honda|NSX Type R '92": createGt7GearboxEntry(5),
+            "Honda|S800 '66": createGt7GearboxEntry(4),
+            "Hyundai|Genesis Coupe 3.8 '13": createGt7GearboxEntry(6),
+            "Hyundai|Genesis Gr.4": createGt7GearboxEntry(6),
+            "Hyundai|ELANTRA N TC '24": createGt7GearboxEntry(6),
+            "Hyundai|Hyundai N 2025 VGT (Gr.1)": createGt7GearboxEntry(6),
+            "Jaguar|F-type Gr.3": createGt7GearboxEntry(6),
+            "Jaguar|XJ13 '66": createGt7GearboxEntry(5),
+            "Jaguar|XJ220 '92": createGt7GearboxEntry(5),
+            "Jaguar|XJR-9 '88": createGt7GearboxEntry(5),
+            "Lamborghini|Urus '18": createGt7GearboxEntry(8),
+            "Lamborghini|Huracán GT3 '15": createGt7GearboxEntry(6),
+            "Lamborghini|Murciélago LP 640 '09": createGt7GearboxEntry(6),
+            "Lamborghini|Gallardo LP 560-4 '08": createGt7GearboxEntry(6),
+            "Lamborghini|Countach LP400 '74": createGt7GearboxEntry(5),
+            "Lamborghini|Countach 25th Anniversary '88": createGt7GearboxEntry(5),
+            "Lamborghini|Diablo GT '00": createGt7GearboxEntry(5),
+            "Lamborghini|Miura P400 Bertone Prototype '67": createGt7GearboxEntry(5),
+            "Lexus|LC500 '17": createGt7GearboxEntry(10),
+            "Lexus|RC F '14": createGt7GearboxEntry(8),
+            "Lexus|LFA '10": createGt7GearboxEntry(6),
+            "Lexus|RC F GT3 prototype '16": createGt7GearboxEntry(6),
+            "Lexus|SC430 GT500 '08": createGt7GearboxEntry(6),
+            "Maserati|MC20 '20": createGt7GearboxEntry(8),
+            "Maserati|GranTurismo S '08": createGt7GearboxEntry(6),
+            "Maserati|Merak SS '80": createGt7GearboxEntry(5),
+            "Mazda|LM55 VGT": createGt7GearboxEntry(8),
+            "Mazda|MAZDA3 '19": createGt7GearboxEntry(6),
+            "Mazda|MAZDA3 Gr.4": createGt7GearboxEntry(6),
+            "Mazda|Atenza Sedan XD L Package '15": createGt7GearboxEntry(6),
+            "Mazda|Atenza Gr.4": createGt7GearboxEntry(6),
+            "Mazda|Atenza Gr.3": createGt7GearboxEntry(6),
+            "Mazda|Demio XD Touring '15": createGt7GearboxEntry(6),
+            "Mazda|Roadster S (ND) '15": createGt7GearboxEntry(6),
+            "Mazda|Roadster NR-A (ND) '22": createGt7GearboxEntry(6),
+            "Mazda|CX-30 X Smart Edition '21": createGt7GearboxEntry(6),
+            "Mazda|RX-8 Spirit R '12": createGt7GearboxEntry(6),
+            "Mazda|787B '91": createGt7GearboxEntry(5),
+            "Mazda|Eunos Roadster (NA) '89": createGt7GearboxEntry(5),
+            "Mazda|RX-7 GT-X (FC) '90": createGt7GearboxEntry(5),
+            "Mazda|RX-7 Spirit R Type A (FD) '02": createGt7GearboxEntry(5),
+            "Mazda|ɛ̃fini RX-7 Type R (FD) '91": createGt7GearboxEntry(5),
+            "Mazda|RX500 '70": createGt7GearboxEntry(4),
+            "McLaren|MP4/4 '88": createGt7GearboxEntry(6),
+            "Mercedes-Benz|Unimog Type 411 '62": createGt7GearboxEntry(6),
+            "Mercedes-Benz|CLK-LM '98": createGt7GearboxEntry(6),
+            "Mercedes-Benz|190 E 2.5-16 Evolution II '91": createGt7GearboxEntry(5),
+            "Mercedes-Benz|Sauber Mercedes C9 '89": createGt7GearboxEntry(5),
+            "Mercedes-Benz|W 196 R '55": createGt7GearboxEntry(5),
+            "Mercedes-Benz|300 SL Coupé '54": createGt7GearboxEntry(4),
+            "Mini|MINI Cooper S '05": createGt7GearboxEntry(6),
+            "Mitsubishi|Concept XR-PHEV EVOLUTION VGT": createGt7GearboxEntry(8),
+            "Mitsubishi|Lancer Evolution VIII MR GSR '04": createGt7GearboxEntry(6),
+            "Mitsubishi|Lancer Evolution IX MR GSR '06": createGt7GearboxEntry(6),
+            "Mitsubishi|Mitsubishi Lancer Evolution Final Edition Gr.3": createGt7GearboxEntry(6),
+            "Mitsubishi|GTO Twin Turbo '91": createGt7GearboxEntry(5),
+            "Mitsubishi|Lancer Evolution III GSR '95": createGt7GearboxEntry(5),
+            "Mitsubishi|Lancer Evolution IV GSR '96": createGt7GearboxEntry(5),
+            "Mitsubishi|Lancer Evolution V GSR '98": createGt7GearboxEntry(5),
+            "Mitsubishi|Lancer Evolution VI GSR T.M. SCP '99": createGt7GearboxEntry(5),
+            "Mitsubishi|FTO GP Version R '97": createGt7GearboxEntry(5),
+            "Nismo|R34 GT-R Z-tune '05": createGt7GearboxEntry(6),
+            "Nismo|400R '95": createGt7GearboxEntry(5),
+            "Nissan|Fairlady Z Version S (Z33) '07": createGt7GearboxEntry(6),
+            "Nissan|Fairlady Z (Z34) '08": createGt7GearboxEntry(6),
+            "Nissan|GT-R '17": createGt7GearboxEntry(6),
+            "Nissan|GT-R Safety Car": createGt7GearboxEntry(6),
+            "Nissan|GT-R NISMO GT3 '18": createGt7GearboxEntry(6),
+            "Nissan|GT-R GT500 '99": createGt7GearboxEntry(6),
+            "Nissan|GT-R NISMO GT500 '16": createGt7GearboxEntry(6),
+            "Nissan|Silvia spec-R Aero (S15) Touring Car": createGt7GearboxEntry(6),
+            "Nissan|R34 GT-R V•spec II Nür '02": createGt7GearboxEntry(6),
+            "Nissan|180SX Type X '96": createGt7GearboxEntry(5),
+            "Nissan|Fairlady Z 432 '69": createGt7GearboxEntry(5),
+            "Nissan|Fairlady 240ZG (HS30) '71": createGt7GearboxEntry(5),
+            "Nissan|R92CP '92": createGt7GearboxEntry(5),
+            "Nissan|Silvia K's Aero (S14) '96": createGt7GearboxEntry(5),
+            "Nissan|Sileighty '98": createGt7GearboxEntry(5),
+            "Nissan|Skyline Hard Top 2000GT-R (KPGC10) '70": createGt7GearboxEntry(5),
+            "Nissan|Skyline 2000GT-R (KPGC110) '73": createGt7GearboxEntry(5),
+            "Nissan|R32 GT-R NISMO '90": createGt7GearboxEntry(5),
+            "Nissan|R32 GT-R V•spec II '94": createGt7GearboxEntry(5),
+            "Nissan|R33 GT-R V•spec '97": createGt7GearboxEntry(5),
+            "Nissan|Skyline Super Silhouette '84": createGt7GearboxEntry(5),
+            "Nissan|Skyline GTS-R (R31) '87": createGt7GearboxEntry(5),
+            "Opel|Opel Corsa GSE VGT": createGt7GearboxEntry(1),
+            "Pagani|Zonda R '09": createGt7GearboxEntry(6),
+            "Peugeot|205 Turbo 16 Evolution 2 '86": createGt7GearboxEntry(5),
+            "Porsche|917 LIVING LEGEND": createGt7GearboxEntry(8),
+            "Porsche|911 Carrera RS (901) '73": createGt7GearboxEntry(5),
+            "Porsche|911 Turbo (930) '81": createGt7GearboxEntry(5),
+            "Porsche|911 Turbo S Leichtbau (964) '93": createGt7GearboxEntry(5),
+            "Porsche|911 Carrera RS (964) '92": createGt7GearboxEntry(5),
+            "Porsche|962 C '88": createGt7GearboxEntry(5),
+            "Porsche|Carrera GTS (904) '64": createGt7GearboxEntry(5),
+            "Porsche|356 A/1500 GS Carrera '56": createGt7GearboxEntry(4),
+            "Porsche|356 A/1500 GS GT Carrera Speedster '56": createGt7GearboxEntry(4),
+            "Porsche|Spyder type 550/1500RS '55": createGt7GearboxEntry(4),
+            "Renault|Clio V6 24V '00": createGt7GearboxEntry(6),
+            "Renault|Clio R.S. 220 Trophy '15": createGt7GearboxEntry(6),
+            "Renault|Clio R.S. 220 Trophy '16": createGt7GearboxEntry(6),
+            "Renault|Avantime 3.0 V6 24V '02": createGt7GearboxEntry(6),
+            "Renault|Mégane R.S. Trophy '11": createGt7GearboxEntry(6),
+            "Renault|Mégane R.S. Trophy Safety Car": createGt7GearboxEntry(6),
+            "Renault|Mégane Trophy '11": createGt7GearboxEntry(6),
+            "Renault|Captur S Edition '21": createGt7GearboxEntry(6),
+            "Renault|Twingo '93": createGt7GearboxEntry(5),
+            "Renault|R5 Turbo '80": createGt7GearboxEntry(5),
+            "Renault|R8 Gordini '66": createGt7GearboxEntry(5),
+            "Renault|Kangoo 1.4 '01": createGt7GearboxEntry(4),
+            "Renault|R4 GTL '85": createGt7GearboxEntry(4),
+            "Subaru|BRZ S '15": createGt7GearboxEntry(6),
+            "Subaru|BRZ S '21": createGt7GearboxEntry(6),
+            "Subaru|Impreza Rally Car '98": createGt7GearboxEntry(6),
+            "Subaru|Impreza Sedan WRX STi '04": createGt7GearboxEntry(6),
+            "Subaru|WRX STI Type S '14": createGt7GearboxEntry(6),
+            "Subaru|Impreza 22B-STi '98": createGt7GearboxEntry(5),
+            "Super Formula|SF19 Super Formula / Honda '19": createGt7GearboxEntry(6),
+            "Super Formula|SF19 Super Formula / Toyota '19": createGt7GearboxEntry(6),
+            "Super Formula|SF23 Super Formula / Honda '23": createGt7GearboxEntry(6),
+            "Super Formula|SF23 Super Formula / Toyota '23": createGt7GearboxEntry(6),
+            "Toyota|Alphard Executive Lounge '18": createGt7GearboxEntry(8),
+            "Toyota|Crown Athlete G '13": createGt7GearboxEntry(8),
+            "Toyota|GR Supra RZ '19": createGt7GearboxEntry(8),
+            "Toyota|86 GT '15": createGt7GearboxEntry(6),
+            "Toyota|86 GT\"Limited\" '16": createGt7GearboxEntry(6),
+            "Toyota|86 GRMN '16": createGt7GearboxEntry(6),
+            "Toyota|86 Gr.B Rally Car": createGt7GearboxEntry(6),
+            "Toyota|86 Gr.4": createGt7GearboxEntry(6),
+            "Toyota|Himedic '21": createGt7GearboxEntry(6),
+            "Toyota|Celica GT-FOUR Rally Car (ST205) '95": createGt7GearboxEntry(6),
+            "Toyota|FT-1 VGT": createGt7GearboxEntry(6),
+            "Toyota|FT-1 VGT (Gr.3)": createGt7GearboxEntry(6),
+            "Toyota|GR Corolla MORIZO Edition '22": createGt7GearboxEntry(6),
+            "Toyota|GR Supra Race Car '19": createGt7GearboxEntry(6),
+            "Toyota|GR Yaris RZ \"High Performance\" '20": createGt7GearboxEntry(6),
+            "Toyota|S-FR '15": createGt7GearboxEntry(6),
+            "Toyota|S-FR Racing Concept '16": createGt7GearboxEntry(6),
+            "Toyota|Supra RZ '97": createGt7GearboxEntry(6),
+            "Toyota|Supra GT500 '97": createGt7GearboxEntry(6),
+            "Toyota|GT-One (TS020) '99": createGt7GearboxEntry(6),
+            "Toyota|2000GT '67": createGt7GearboxEntry(5),
+            "Toyota|Celica GT-FOUR (ST205) '94": createGt7GearboxEntry(5),
+            "Toyota|Corolla Levin 1600GT APEX (AE86) '83": createGt7GearboxEntry(5),
+            "Toyota|MR2 GT-S '97": createGt7GearboxEntry(5),
+            "Toyota|Sprinter Trueno 1600GT APEX (AE86) '83": createGt7GearboxEntry(5),
+            "Toyota|Sprinter Trueno 1600GT APEX (S.Shigeno Version)": createGt7GearboxEntry(5),
+            "Toyota|Supra 3.0GT Turbo A '88": createGt7GearboxEntry(5),
+            "Toyota|Sports 800 '65": createGt7GearboxEntry(4),
+            "Toyota|Aqua S '11": createGt7GearboxEntry(1),
+            "Toyota|Prius G '09": createGt7GearboxEntry(1),
+            "Volkswagen|Golf VII GTI '14": createGt7GearboxEntry(6),
+            "Volkswagen|Polo GTI '14": createGt7GearboxEntry(6),
+            "Volkswagen|Scirocco R '10": createGt7GearboxEntry(6),
+            "Volvo|V40 T5 R-Design '13": createGt7GearboxEntry(6),
+            "Volvo|240 SE Estate '93": createGt7GearboxEntry(5),
+            "Xiaomi|SU7 Ultra '25": createGt7GearboxEntry(1),
+            "Yangwang|U9 '24": createGt7GearboxEntry(1)
+        };
+
+        const manualVerifiedGearboxTable = {
+            "Ferrari|Ferrari 430 Scuderia '07": {
+                maxGears: 6,
+                gearboxStyle: '6-speed F1 automated manual gearbox',
+                sourceLabel: 'Manually verified from Ferrari F430 / 430 Scuderia specifications'
+            },
+            "Ferrari|Ferrari 458 Italia '09": {
+                maxGears: 7,
+                gearboxStyle: '7-speed dual-clutch performance gearbox',
+                sourceLabel: 'Manually verified from Ferrari 458 specifications'
+            },
+            "Ferrari|Ferrari F8 Tributo '19": {
+                maxGears: 7,
+                gearboxStyle: '7-speed Magna dual-clutch performance gearbox',
+                sourceLabel: 'Manually verified from Ferrari F8 Tributo specifications'
+            },
+            "Lamborghini|Lamborghini Aventador LP 750-4 Superveloce '15": {
+                maxGears: 7,
+                gearboxStyle: '7-speed ISR electrohydraulic performance gearbox',
+                sourceLabel: 'Manually verified from Aventador LP 750-4 SV specifications'
+            },
+            "Mazda|Mazda Roadster S (ND) '15": {
+                maxGears: 6,
+                gearboxStyle: '6-speed lightweight manual gearbox',
+                sourceLabel: 'Manually verified from Mazda MX-5 ND specifications'
+            },
+            "Mazda|Mazda RX-7 Spirit R Type A (FD) '02": {
+                maxGears: 5,
+                gearboxStyle: '5-speed twin-turbo rotary manual gearbox',
+                sourceLabel: 'Manually verified from Mazda RX-7 Spirit R Type A specifications'
+            },
+            "Mitsubishi|Mitsubishi Lancer Evolution Final Edition '15": {
+                maxGears: 5,
+                gearboxStyle: '5-speed rally-derived manual gearbox',
+                sourceLabel: 'Manually verified from Lancer Evolution X Final Edition specifications'
+            },
+            "Nissan|Nissan GT-R NISMO '17": {
+                maxGears: 6,
+                gearboxStyle: '6-speed dual-clutch transaxle gearbox',
+                sourceLabel: 'Manually verified from Nissan GT-R R35 specifications'
+            },
+            "Porsche|Porsche 911 GT3 (997) '09": {
+                maxGears: 6,
+                gearboxStyle: '6-speed motorsport manual gearbox',
+                sourceLabel: 'Manually verified from Porsche 911 GT3 997 specifications'
+            },
+            "Porsche|Porsche 911 GT3 RS (991) '16": {
+                maxGears: 7,
+                gearboxStyle: '7-speed PDK motorsport dual-clutch gearbox',
+                sourceLabel: 'Manually verified from Porsche 911 GT3 RS 991 specifications'
+            },
+            "Porsche|Porsche Cayman GT4 '16": {
+                maxGears: 6,
+                gearboxStyle: '6-speed GT manual gearbox',
+                sourceLabel: 'Manually verified from Porsche Cayman GT4 981 specifications'
+            },
+            "Toyota|Toyota GR Supra RZ '19": {
+                maxGears: 8,
+                gearboxStyle: '8-speed ZF performance automatic gearbox',
+                sourceLabel: 'Manually verified from Toyota GR Supra A90 specifications'
+            },
+            "Toyota|Toyota GR Supra RZ '20": {
+                maxGears: 8,
+                gearboxStyle: '8-speed ZF performance automatic gearbox',
+                sourceLabel: 'Manually verified from Toyota GR Supra A90 specifications'
+            },
+            "AMG|Mercedes-AMG C 63 S '15": {
+                maxGears: 7,
+                gearboxStyle: '7-speed AMG Speedshift MCT gearbox',
+                sourceLabel: 'Manually verified from Mercedes-AMG C 63 S specifications'
+            },
+            "AMG|Mercedes-AMG GT Black Series '20": {
+                maxGears: 7,
+                gearboxStyle: '7-speed AMG Speedshift dual-clutch gearbox',
+                sourceLabel: 'Manually verified from Mercedes-AMG GT Black Series specifications'
+            },
+            "AMG|Mercedes-AMG GT R '17": {
+                maxGears: 7,
+                gearboxStyle: '7-speed AMG Speedshift dual-clutch transaxle gearbox',
+                sourceLabel: 'Manually verified from Mercedes-AMG GT R specifications'
+            },
+            "AMG|Mercedes-AMG GT S '15": {
+                maxGears: 7,
+                gearboxStyle: '7-speed AMG Speedshift dual-clutch transaxle gearbox',
+                sourceLabel: 'Manually verified from Mercedes-AMG GT S specifications'
+            },
+            "AMG|Mercedes-Benz SLS AMG '10": {
+                maxGears: 7,
+                gearboxStyle: '7-speed AMG Speedshift dual-clutch gearbox',
+                sourceLabel: 'Manually verified from Mercedes-Benz SLS AMG specifications'
+            },
+            "Aston Martin|Aston Martin DB11 '16": {
+                maxGears: 8,
+                gearboxStyle: '8-speed ZF grand touring automatic gearbox',
+                sourceLabel: 'Manually verified from Aston Martin DB11 specifications'
+            },
+            "Aston Martin|Aston Martin One-77 '11": {
+                maxGears: 6,
+                gearboxStyle: '6-speed automated manual performance gearbox',
+                sourceLabel: 'Manually verified from Aston Martin One-77 specifications'
+            },
+            "Aston Martin|Aston Martin Valkyrie '21": {
+                maxGears: 7,
+                gearboxStyle: '7-speed automated manual hypercar gearbox',
+                sourceLabel: 'Manually verified from Aston Martin Valkyrie specifications'
+            },
+            "Aston Martin|Aston Martin Vantage '18": {
+                maxGears: 8,
+                gearboxStyle: '8-speed ZF performance automatic gearbox',
+                sourceLabel: 'Manually verified from Aston Martin Vantage specifications'
+            },
+            "Audi|Audi R8 4.2 FSI R tronic '07": {
+                maxGears: 6,
+                gearboxStyle: '6-speed R tronic automated manual gearbox',
+                sourceLabel: 'Manually verified from Audi R8 4.2 FSI R tronic specifications'
+            },
+            "Audi|Audi R8 Coupé V10 plus '16": {
+                maxGears: 7,
+                gearboxStyle: '7-speed S tronic dual-clutch gearbox',
+                sourceLabel: 'Manually verified from Audi R8 V10 plus specifications'
+            },
+            "Audi|Audi TT Coupé 3.2 quattro '03": {
+                maxGears: 6,
+                gearboxStyle: '6-speed DSG quattro gearbox',
+                sourceLabel: 'Manually verified from Audi TT 3.2 quattro specifications'
+            },
+            "Audi|Audi TTS Coupé '09": {
+                maxGears: 6,
+                gearboxStyle: '6-speed S tronic quattro gearbox',
+                sourceLabel: 'Manually verified from Audi TTS Coupe specifications'
+            },
+            "Audi|Audi TTS Coupé '14": {
+                maxGears: 6,
+                gearboxStyle: '6-speed S tronic quattro gearbox',
+                sourceLabel: 'Manually verified from Audi TTS Coupe specifications'
+            },
+            "BMW|BMW i3 '15": {
+                maxGears: 1,
+                gearboxStyle: 'single-speed electric reduction gearbox',
+                sourceLabel: 'Manually verified from BMW i3 specifications'
+            },
+            "BMW|BMW M3 '89": {
+                maxGears: 5,
+                gearboxStyle: '5-speed performance manual gearbox',
+                sourceLabel: 'Manually verified from BMW M3 E30 specifications'
+            },
+            "BMW|BMW M3 '97": {
+                maxGears: 6,
+                gearboxStyle: '6-speed performance manual gearbox',
+                sourceLabel: 'Manually verified from BMW M3 E36 Evolution specifications'
+            },
+            "BMW|BMW M3 Coupé '03": {
+                maxGears: 6,
+                gearboxStyle: '6-speed M performance gearbox',
+                sourceLabel: 'Manually verified from BMW M3 E46 specifications'
+            },
+            "BMW|BMW M4 Coupé '14": {
+                maxGears: 7,
+                gearboxStyle: '7-speed M dual-clutch gearbox',
+                sourceLabel: 'Manually verified from BMW M4 F82 specifications'
+            },
+            "BMW|BMW Z8 '01": {
+                maxGears: 6,
+                gearboxStyle: '6-speed grand touring manual gearbox',
+                sourceLabel: 'Manually verified from BMW Z8 specifications'
+            },
+            "Chevrolet|Chevrolet Camaro ZL1 1LE Package '18": {
+                maxGears: 6,
+                gearboxStyle: '6-speed track-focused manual gearbox',
+                sourceLabel: 'Manually verified from Chevrolet Camaro ZL1 1LE specifications'
+            },
+            "Chevrolet|Chevrolet Corvette C8 Stingray '20": {
+                maxGears: 8,
+                gearboxStyle: '8-speed dual-clutch performance gearbox',
+                sourceLabel: 'Manually verified from Chevrolet Corvette C8 Stingray specifications'
+            },
+            "Chevrolet|Chevrolet Corvette Z06 (C5) '01": {
+                maxGears: 6,
+                gearboxStyle: '6-speed manual performance gearbox',
+                sourceLabel: 'Manually verified from Chevrolet Corvette Z06 C5 specifications'
+            },
+            "Chevrolet|Chevrolet Corvette ZR-1 (C4) '89": {
+                maxGears: 6,
+                gearboxStyle: '6-speed manual performance gearbox',
+                sourceLabel: 'Manually verified from Chevrolet Corvette ZR-1 C4 specifications'
+            },
+            "Chevrolet|Chevrolet Corvette ZR1 (C6) '09": {
+                maxGears: 6,
+                gearboxStyle: '6-speed manual performance gearbox',
+                sourceLabel: 'Manually verified from Chevrolet Corvette ZR1 C6 specifications'
+            },
+            "Dodge|Dodge Challenger SRT Demon '18": {
+                maxGears: 8,
+                gearboxStyle: '8-speed TorqueFlite performance automatic gearbox',
+                sourceLabel: 'Manually verified from Dodge Challenger SRT Demon specifications'
+            },
+            "Dodge|Dodge Charger SRT Hellcat '15": {
+                maxGears: 8,
+                gearboxStyle: '8-speed TorqueFlite performance automatic gearbox',
+                sourceLabel: 'Manually verified from Dodge Charger SRT Hellcat specifications'
+            },
+            "Dodge|Dodge Viper GTS '02": {
+                maxGears: 6,
+                gearboxStyle: '6-speed V10 manual gearbox',
+                sourceLabel: 'Manually verified from Dodge Viper GTS specifications'
+            },
+            "Dodge|Dodge Viper GTS '13": {
+                maxGears: 6,
+                gearboxStyle: '6-speed V10 manual gearbox',
+                sourceLabel: 'Manually verified from Dodge Viper GTS VX specifications'
+            },
+            "Dodge|Dodge Viper SRT10 Coupe '06": {
+                maxGears: 6,
+                gearboxStyle: '6-speed V10 manual gearbox',
+                sourceLabel: 'Manually verified from Dodge Viper SRT10 Coupe specifications'
+            },
+            "Ferrari|Ferrari 296 GTB '22": {
+                maxGears: 8,
+                gearboxStyle: '8-speed dual-clutch performance gearbox',
+                sourceLabel: 'Manually verified from Ferrari 296 GTB specifications'
+            },
+            "Ferrari|Ferrari 812 Superfast '17": {
+                maxGears: 7,
+                gearboxStyle: '7-speed dual-clutch grand touring gearbox',
+                sourceLabel: 'Manually verified from Ferrari 812 Superfast specifications'
+            },
+            "Ferrari|Ferrari F12berlinetta '12": {
+                maxGears: 7,
+                gearboxStyle: '7-speed dual-clutch grand touring gearbox',
+                sourceLabel: 'Manually verified from Ferrari F12berlinetta specifications'
+            },
+            "Ferrari|Ferrari F40 '92": {
+                maxGears: 5,
+                gearboxStyle: '5-speed gated manual gearbox',
+                sourceLabel: 'Manually verified from Ferrari F40 specifications'
+            },
+            "Ferrari|Ferrari F50 '95": {
+                maxGears: 6,
+                gearboxStyle: '6-speed manual gearbox',
+                sourceLabel: 'Manually verified from Ferrari F50 specifications'
+            },
+            "Ferrari|Ferrari LaFerrari '13": {
+                maxGears: 7,
+                gearboxStyle: '7-speed dual-clutch hybrid gearbox',
+                sourceLabel: 'Manually verified from Ferrari LaFerrari specifications'
+            },
+            "Ford|Ford Focus RS '18": {
+                maxGears: 6,
+                gearboxStyle: '6-speed hot hatch manual gearbox',
+                sourceLabel: 'Manually verified from Ford Focus RS specifications'
+            },
+            "Ford|Ford GT '06": {
+                maxGears: 6,
+                gearboxStyle: '6-speed manual supercar gearbox',
+                sourceLabel: 'Manually verified from Ford GT 2005-2006 specifications'
+            },
+            "Ford|Ford GT '17": {
+                maxGears: 7,
+                gearboxStyle: '7-speed Getrag dual-clutch gearbox',
+                sourceLabel: 'Manually verified from Ford GT 2017 specifications'
+            },
+            "Ford|Ford Mustang GT Premium Fastback '15": {
+                maxGears: 6,
+                gearboxStyle: '6-speed muscle car gearbox',
+                sourceLabel: 'Manually verified from Ford Mustang GT S550 specifications'
+            },
+            "Ford|Ford Shelby GT350R '16": {
+                maxGears: 6,
+                gearboxStyle: '6-speed Tremec track manual gearbox',
+                sourceLabel: 'Manually verified from Ford Shelby GT350R specifications'
+            },
+            "Honda|Honda Civic Type R (FK2) '15": {
+                maxGears: 6,
+                gearboxStyle: '6-speed Type R manual gearbox',
+                sourceLabel: 'Manually verified from Honda Civic Type R FK2 specifications'
+            },
+            "Honda|Honda Civic Type R (FL5) '22": {
+                maxGears: 6,
+                gearboxStyle: '6-speed Type R manual gearbox',
+                sourceLabel: 'Manually verified from Honda Civic Type R FL5 specifications'
+            },
+            "Honda|Honda Civic Type R Limited Edition (FK8) '20": {
+                maxGears: 6,
+                gearboxStyle: '6-speed Type R manual gearbox',
+                sourceLabel: 'Manually verified from Honda Civic Type R FK8 Limited Edition specifications'
+            },
+            "Honda|Honda Integra Type R (DC2) '95": {
+                maxGears: 5,
+                gearboxStyle: '5-speed Type R manual gearbox',
+                sourceLabel: 'Manually verified from Honda Integra Type R DC2 specifications'
+            },
+            "Honda|Honda Integra Type R (DC2) '98": {
+                maxGears: 5,
+                gearboxStyle: '5-speed Type R manual gearbox',
+                sourceLabel: 'Manually verified from Honda Integra Type R DC2 specifications'
+            },
+            "Honda|Honda NSX '17": {
+                maxGears: 9,
+                gearboxStyle: '9-speed sport hybrid dual-clutch gearbox',
+                sourceLabel: 'Manually verified from Honda NSX 2017 specifications'
+            },
+            "Honda|Honda NSX Type R '02": {
+                maxGears: 6,
+                gearboxStyle: '6-speed Type R manual gearbox',
+                sourceLabel: 'Manually verified from Honda NSX Type R NA2 specifications'
+            },
+            "Honda|Honda NSX Type R '92": {
+                maxGears: 5,
+                gearboxStyle: '5-speed Type R manual gearbox',
+                sourceLabel: 'Manually verified from Honda NSX Type R NA1 specifications'
+            },
+            "Honda|Honda S2000 '99": {
+                maxGears: 6,
+                gearboxStyle: '6-speed roadster manual gearbox',
+                sourceLabel: 'Manually verified from Honda S2000 AP1 specifications'
+            },
+            "Jaguar|Jaguar F-type R Coupé '14": {
+                maxGears: 8,
+                gearboxStyle: '8-speed Quickshift performance automatic gearbox',
+                sourceLabel: 'Manually verified from Jaguar F-Type R Coupe specifications'
+            },
+            "Jaguar|Jaguar XJ220 '92": {
+                maxGears: 5,
+                gearboxStyle: '5-speed twin-turbo manual gearbox',
+                sourceLabel: 'Manually verified from Jaguar XJ220 specifications'
+            },
+            "Lamborghini|Lamborghini Aventador LP 700-4 '11": {
+                maxGears: 7,
+                gearboxStyle: '7-speed ISR electrohydraulic performance gearbox',
+                sourceLabel: 'Manually verified from Lamborghini Aventador LP 700-4 specifications'
+            },
+            "Lamborghini|Lamborghini Gallardo LP 560-4 '08": {
+                maxGears: 6,
+                gearboxStyle: '6-speed Lamborghini performance gearbox',
+                sourceLabel: 'Manually verified from Lamborghini Gallardo LP 560-4 specifications'
+            },
+            "Lamborghini|Lamborghini Huracán LP 610-4 '15": {
+                maxGears: 7,
+                gearboxStyle: '7-speed LDF dual-clutch performance gearbox',
+                sourceLabel: 'Manually verified from Lamborghini Huracan LP 610-4 specifications'
+            },
+            "Lamborghini|Lamborghini Murciélago LP 640 '09": {
+                maxGears: 6,
+                gearboxStyle: '6-speed Lamborghini performance gearbox',
+                sourceLabel: 'Manually verified from Lamborghini Murcielago LP 640 specifications'
+            },
+            "Lamborghini|Lamborghini Urus '18": {
+                maxGears: 8,
+                gearboxStyle: '8-speed all-wheel-drive performance automatic gearbox',
+                sourceLabel: 'Manually verified from Lamborghini Urus specifications'
+            },
+            "Lexus|Lexus LC500 '17": {
+                maxGears: 10,
+                gearboxStyle: '10-speed Direct Shift automatic gearbox',
+                sourceLabel: 'Manually verified from Lexus LC500 specifications'
+            },
+            "Lexus|Lexus LFA '10": {
+                maxGears: 6,
+                gearboxStyle: '6-speed automated sequential manual gearbox',
+                sourceLabel: 'Manually verified from Lexus LFA specifications'
+            },
+            "Lexus|Lexus RC F '14": {
+                maxGears: 8,
+                gearboxStyle: '8-speed Sport Direct Shift gearbox',
+                sourceLabel: 'Manually verified from Lexus RC F specifications'
+            },
+            "Maserati|Maserati GranTurismo S '08": {
+                maxGears: 6,
+                gearboxStyle: '6-speed Maserati performance gearbox',
+                sourceLabel: 'Manually verified from Maserati GranTurismo S specifications'
+            },
+            "Maserati|Maserati MC20 '20": {
+                maxGears: 8,
+                gearboxStyle: '8-speed dual-clutch supercar gearbox',
+                sourceLabel: 'Manually verified from Maserati MC20 specifications'
+            },
+            "Mazda|Mazda Atenza Sedan XD L Package '15": {
+                maxGears: 6,
+                gearboxStyle: '6-speed Skyactiv-Drive gearbox',
+                sourceLabel: 'Manually verified from Mazda Atenza XD specifications'
+            },
+            "Nissan|Nissan 180SX Type X '96": {
+                maxGears: 5,
+                gearboxStyle: '5-speed turbocharged manual gearbox',
+                sourceLabel: 'Manually verified from Nissan 180SX Type X specifications'
+            },
+            "Nissan|Nissan Fairlady Z 300ZX TwinTurbo 2seater (Z32) '89": {
+                maxGears: 5,
+                gearboxStyle: '5-speed twin-turbo manual gearbox',
+                sourceLabel: 'Manually verified from Nissan 300ZX Z32 Twin Turbo specifications'
+            },
+            "Nissan|Nissan Fairlady Z Version S (Z33) '07": {
+                maxGears: 6,
+                gearboxStyle: '6-speed sports manual gearbox',
+                sourceLabel: 'Manually verified from Nissan Fairlady Z Z33 specifications'
+            },
+            "Nissan|Nissan GT-R NISMO (R32) '90": {
+                maxGears: 5,
+                gearboxStyle: '5-speed all-wheel-drive manual gearbox',
+                sourceLabel: 'Manually verified from Nissan Skyline GT-R R32 specifications'
+            },
+            "Nissan|Nissan GT-R Premium edition '17": {
+                maxGears: 6,
+                gearboxStyle: '6-speed dual-clutch transaxle gearbox',
+                sourceLabel: 'Manually verified from Nissan GT-R R35 Premium specifications'
+            },
+            "Nissan|Nissan GT-R Premium edition T-spec '24": {
+                maxGears: 6,
+                gearboxStyle: '6-speed dual-clutch transaxle gearbox',
+                sourceLabel: 'Manually verified from Nissan GT-R T-spec specifications'
+            },
+            "Nissan|Nissan Silvia spec-R Aero (S15) '02": {
+                maxGears: 6,
+                gearboxStyle: '6-speed rear-wheel-drive manual gearbox',
+                sourceLabel: 'Manually verified from Nissan Silvia S15 spec-R specifications'
+            },
+            "Nissan|Nissan Skyline GT-R V･spec (R33) '97": {
+                maxGears: 5,
+                gearboxStyle: '5-speed all-wheel-drive manual gearbox',
+                sourceLabel: 'Manually verified from Nissan Skyline GT-R R33 specifications'
+            },
+            "Nissan|Nissan Skyline GT-R V･spec II (R32) '94": {
+                maxGears: 5,
+                gearboxStyle: '5-speed all-wheel-drive manual gearbox',
+                sourceLabel: 'Manually verified from Nissan Skyline GT-R R32 specifications'
+            },
+            "Nissan|Nissan Skyline GT-R V･spec II Nür (R34) '02": {
+                maxGears: 6,
+                gearboxStyle: '6-speed all-wheel-drive manual gearbox',
+                sourceLabel: 'Manually verified from Nissan Skyline GT-R R34 Nür specifications'
+            },
+            "Porsche|Porsche 911 Carrera RS (964) '92": {
+                maxGears: 5,
+                gearboxStyle: '5-speed RS manual gearbox',
+                sourceLabel: 'Manually verified from Porsche 911 Carrera RS 964 specifications'
+            },
+            "Porsche|Porsche 911 Carrera RS (993) '95": {
+                maxGears: 6,
+                gearboxStyle: '6-speed RS manual gearbox',
+                sourceLabel: 'Manually verified from Porsche 911 Carrera RS 993 specifications'
+            },
+            "Porsche|Porsche 911 GT3 (996) '01": {
+                maxGears: 6,
+                gearboxStyle: '6-speed GT manual gearbox',
+                sourceLabel: 'Manually verified from Porsche 911 GT3 996 specifications'
+            },
+            "Porsche|Porsche 911 GT3 RS (992) '22": {
+                maxGears: 7,
+                gearboxStyle: '7-speed PDK GT dual-clutch gearbox',
+                sourceLabel: 'Manually verified from Porsche 911 GT3 RS 992 specifications'
+            },
+            "Porsche|Porsche 911 Turbo (930) '81": {
+                maxGears: 4,
+                gearboxStyle: '4-speed turbo manual gearbox',
+                sourceLabel: 'Manually verified from Porsche 911 Turbo 930 specifications'
+            },
+            "Porsche|Porsche 911 Turbo S (992) '20": {
+                maxGears: 8,
+                gearboxStyle: '8-speed PDK all-wheel-drive gearbox',
+                sourceLabel: 'Manually verified from Porsche 911 Turbo S 992 specifications'
+            },
+            "Porsche|Porsche 918 Spyder '13": {
+                maxGears: 7,
+                gearboxStyle: '7-speed PDK hybrid gearbox',
+                sourceLabel: 'Manually verified from Porsche 918 Spyder specifications'
+            },
+            "Porsche|Porsche 962 C '88 (Gr.1)": {
+                maxGears: 5,
+                gearboxStyle: '5-speed GT7 race transmission',
+                sourceLabel: 'GT7 in-game gear count verified from GTPlus car page (Gears: 5-speed)'
+            },
+            "Porsche|Porsche Carrera GT '04": {
+                maxGears: 6,
+                gearboxStyle: '6-speed manual supercar gearbox',
+                sourceLabel: 'Manually verified from Porsche Carrera GT specifications'
+            },
+            "Toyota|Toyota 2000GT '67": {
+                maxGears: 5,
+                gearboxStyle: '5-speed classic sports manual gearbox',
+                sourceLabel: 'Manually verified from Toyota 2000GT specifications'
+            },
+            "Toyota|Toyota 86 GRMN '16": {
+                maxGears: 6,
+                gearboxStyle: '6-speed rear-wheel-drive sports gearbox',
+                sourceLabel: 'Manually verified from Toyota 86 GRMN specifications'
+            },
+            "Toyota|Toyota Alphard Executive Lounge '18": {
+                maxGears: 8,
+                gearboxStyle: '8-speed luxury automatic gearbox',
+                sourceLabel: 'Manually verified from Toyota Alphard specifications'
+            },
+            "Toyota|Toyota Crown Athlete G '13": {
+                maxGears: 8,
+                gearboxStyle: '8-speed rear-wheel-drive automatic gearbox',
+                sourceLabel: 'Manually verified from Toyota Crown Athlete G specifications'
+            },
+            "Toyota|Toyota GR Corolla MORIZO Edition '22": {
+                maxGears: 6,
+                gearboxStyle: '6-speed rally-inspired manual gearbox',
+                sourceLabel: 'Manually verified from Toyota GR Corolla MORIZO Edition specifications'
+            },
+            "Toyota|Toyota GR Yaris 1st Edition RZ \"High Performance\" '20": {
+                maxGears: 6,
+                gearboxStyle: '6-speed all-wheel-drive manual gearbox',
+                sourceLabel: 'Manually verified from Toyota GR Yaris specifications'
+            },
+            "Toyota|Toyota GR86 RZ '21": {
+                maxGears: 6,
+                gearboxStyle: '6-speed rear-wheel-drive sports gearbox',
+                sourceLabel: 'Manually verified from Toyota GR86 specifications'
+            },
+            "Toyota|Toyota MR2 GT-S '97": {
+                maxGears: 5,
+                gearboxStyle: '5-speed mid-engine turbo manual gearbox',
+                sourceLabel: 'Manually verified from Toyota MR2 SW20 turbo specifications'
+            },
+            "Toyota|Toyota RAV4 Adventure '20": {
+                maxGears: 8,
+                gearboxStyle: '8-speed all-wheel-drive automatic gearbox',
+                sourceLabel: 'Manually verified from Toyota RAV4 Adventure specifications'
+            },
+            "Toyota|Toyota Supra 3.0GT Turbo A '88": {
+                maxGears: 5,
+                gearboxStyle: '5-speed turbo manual gearbox',
+                sourceLabel: 'Manually verified from Toyota Supra Turbo A specifications'
+            },
+            "Toyota|Toyota Supra RZ '97": {
+                maxGears: 6,
+                gearboxStyle: '6-speed twin-turbo manual gearbox',
+                sourceLabel: 'Manually verified from Toyota Supra JZA80 RZ specifications'
+            },
+            "Toyota|Toyota Tundra TRD Pro '19": {
+                maxGears: 6,
+                gearboxStyle: '6-speed truck automatic gearbox',
+                sourceLabel: 'Manually verified from Toyota Tundra TRD Pro specifications'
+            },
+            "Alfa Romeo|Alfa Romeo Giulia GTAm '20": {
+                maxGears: 8,
+                gearboxStyle: '8-speed GT7 road transmission',
+                sourceLabel: 'GT7 in-game gear count verified from GTPlus car list (Gears column)'
+            },
+            "Aston Martin|Aston Martin DB11 '16": {
+                maxGears: 8,
+                gearboxStyle: '8-speed GT7 road transmission',
+                sourceLabel: 'GT7 in-game gear count verified from GTPlus car list (Gears column)'
+            },
+            "Aston Martin|Aston Martin Vantage '18": {
+                maxGears: 8,
+                gearboxStyle: '8-speed GT7 road transmission',
+                sourceLabel: 'GT7 in-game gear count verified from GTPlus car list (Gears column)'
+            },
+            "Audi|Audi TTS Coupé '14": {
+                maxGears: 6,
+                gearboxStyle: '6-speed GT7 road transmission',
+                sourceLabel: 'GT7 in-game gear count verified from GTPlus car list (Gears column)'
+            },
+            "Audi|Audi TT Cup '16 (Gr.4)": {
+                maxGears: 6,
+                gearboxStyle: '6-speed GT7 race transmission',
+                sourceLabel: 'GT7 in-game gear count verified from GTPlus car list (Gears column)'
+            },
+            "BMW|BMW M3 '97": {
+                maxGears: 6,
+                gearboxStyle: '6-speed GT7 road transmission',
+                sourceLabel: 'GT7 in-game gear count verified from GTPlus car list (Gears column)'
+            },
+            "BMW|BMW M3 Coupé '03": {
+                maxGears: 6,
+                gearboxStyle: '6-speed GT7 road transmission',
+                sourceLabel: 'GT7 in-game gear count verified from GTPlus car list (Gears column)'
+            },
+            "BMW|BMW M3 Coupé '07": {
+                maxGears: 6,
+                gearboxStyle: '6-speed GT7 road transmission',
+                sourceLabel: 'GT7 in-game gear count verified from GTPlus car list (Gears column)'
+            },
+            "BMW|BMW Z4 3.0i '03": {
+                maxGears: 6,
+                gearboxStyle: '6-speed GT7 road transmission',
+                sourceLabel: 'GT7 in-game gear count verified from GTPlus car list (Gears column)'
+            },
+            "BMW|BMW Z4 GT3 '11 (Gr.3)": {
+                maxGears: 6,
+                gearboxStyle: '6-speed GT7 race transmission',
+                sourceLabel: 'GT7 in-game gear count verified from GTPlus car list (Gears column)'
+            },
+            "Chevrolet|Chevrolet Camaro SS '16": {
+                maxGears: 6,
+                gearboxStyle: '6-speed GT7 road transmission',
+                sourceLabel: 'GT7 in-game gear count verified from GTPlus car list (Gears column)'
+            },
+            "Chevrolet|Chevrolet Corvette C7 Stingray '14": {
+                maxGears: 6,
+                gearboxStyle: '6-speed GT7 road transmission',
+                sourceLabel: 'GT7 in-game gear count verified from GTPlus car list (Gears column)'
+            },
+            "Chevrolet|Chevrolet Corvette C7 Gr.3 (Gr.3)": {
+                maxGears: 6,
+                gearboxStyle: '6-speed GT7 race transmission',
+                sourceLabel: 'GT7 in-game gear count verified from GTPlus car list (Gears column)'
+            },
+            "Chevrolet|Chevrolet Corvette Z06 (C5) '01": {
+                maxGears: 6,
+                gearboxStyle: '6-speed GT7 road transmission',
+                sourceLabel: 'GT7 in-game gear count verified from GTPlus car list (Gears column)'
+            },
+            "Chevrolet|Chevrolet Corvette ZR-1 (C4) '89": {
+                maxGears: 6,
+                gearboxStyle: '6-speed GT7 road transmission',
+                sourceLabel: 'GT7 in-game gear count verified from GTPlus car list (Gears column)'
+            },
+            "Chevrolet|Chevrolet Corvette ZR1 (C6) '09": {
+                maxGears: 6,
+                gearboxStyle: '6-speed GT7 road transmission',
+                sourceLabel: 'GT7 in-game gear count verified from GTPlus car list (Gears column)'
+            },
+            "Dodge|Dodge Charger SRT Hellcat '15": {
+                maxGears: 8,
+                gearboxStyle: '8-speed GT7 road transmission',
+                sourceLabel: 'GT7 in-game gear count verified from GTPlus car list (Gears column)'
+            },
+            "Dodge|Dodge Charger SRT Hellcat Safety Car": {
+                maxGears: 8,
+                gearboxStyle: '8-speed GT7 road transmission',
+                sourceLabel: 'GT7 in-game gear count verified from GTPlus car list (Gears column)'
+            },
+            "Ferrari|Enzo Ferrari '02": {
+                maxGears: 6,
+                gearboxStyle: '6-speed GT7 road transmission',
+                sourceLabel: 'GT7 in-game gear count verified from GTPlus car list (Gears column)'
+            },
+            "Ferrari|Ferrari F50 '95": {
+                maxGears: 6,
+                gearboxStyle: '6-speed GT7 road transmission',
+                sourceLabel: 'GT7 in-game gear count verified from GTPlus car list (Gears column)'
+            },
+            "Ford|Ford F-150 SVT Raptor '11": {
+                maxGears: 6,
+                gearboxStyle: '6-speed GT7 road transmission',
+                sourceLabel: 'GT7 in-game gear count verified from GTPlus car list (Gears column)'
+            },
+            "Ford|Ford Focus ST '15": {
+                maxGears: 6,
+                gearboxStyle: '6-speed GT7 road transmission',
+                sourceLabel: 'GT7 in-game gear count verified from GTPlus car list (Gears column)'
+            },
+            "Ford|Ford GT '06": {
+                maxGears: 6,
+                gearboxStyle: '6-speed GT7 road transmission',
+                sourceLabel: 'GT7 in-game gear count verified from GTPlus car list (Gears column)'
+            },
+            "Genesis|Genesis G70 GR4 (Gr.4)": {
+                maxGears: 6,
+                gearboxStyle: '6-speed GT7 race transmission',
+                sourceLabel: 'GT7 in-game gear count verified from GTPlus car list (Gears column)'
+            },
+            "Honda|Honda Civic Type R (FL5) '22": {
+                maxGears: 6,
+                gearboxStyle: '6-speed GT7 road transmission',
+                sourceLabel: 'GT7 in-game gear count verified from GTPlus car list (Gears column)'
+            },
+            "Honda|Honda Civic Type R Limited Edition (FK8) '20": {
+                maxGears: 6,
+                gearboxStyle: '6-speed GT7 road transmission',
+                sourceLabel: 'GT7 in-game gear count verified from GTPlus car list (Gears column)'
+            },
+            "Honda|Honda Fit Hybrid '14": {
+                maxGears: 7,
+                gearboxStyle: '7-speed GT7 road transmission',
+                sourceLabel: 'GT7 in-game gear count verified from GTPlus car list (Gears column)'
+            },
+            "Honda|Honda NSX '17": {
+                maxGears: 9,
+                gearboxStyle: '9-speed GT7 road transmission',
+                sourceLabel: 'GT7 in-game gear count verified from GTPlus car list (Gears column)'
+            },
+            "Honda|Honda NSX Type R '02": {
+                maxGears: 6,
+                gearboxStyle: '6-speed GT7 road transmission',
+                sourceLabel: 'GT7 in-game gear count verified from GTPlus car list (Gears column)'
+            },
+            "Honda|Honda S2000 '99": {
+                maxGears: 6,
+                gearboxStyle: '6-speed GT7 road transmission',
+                sourceLabel: 'GT7 in-game gear count verified from GTPlus car list (Gears column)'
+            },
+            "Lamborghini|Lamborghini Gallardo LP 560-4 '08": {
+                maxGears: 6,
+                gearboxStyle: '6-speed GT7 road transmission',
+                sourceLabel: 'GT7 in-game gear count verified from GTPlus car list (Gears column)'
+            },
+            "Lamborghini|Lamborghini Huracán GT3 '15 (Gr.3)": {
+                maxGears: 6,
+                gearboxStyle: '6-speed GT7 race transmission',
+                sourceLabel: 'GT7 in-game gear count verified from GTPlus car list (Gears column)'
+            },
+            "Lamborghini|Lamborghini Murciélago LP 640 '09": {
+                maxGears: 6,
+                gearboxStyle: '6-speed GT7 road transmission',
+                sourceLabel: 'GT7 in-game gear count verified from GTPlus car list (Gears column)'
+            },
+            "Lexus|Lexus LC500 '17": {
+                maxGears: 10,
+                gearboxStyle: '10-speed GT7 road transmission',
+                sourceLabel: 'GT7 in-game gear count verified from GTPlus car list (Gears column)'
+            },
+            "Lexus|Lexus LFA '10": {
+                maxGears: 6,
+                gearboxStyle: '6-speed GT7 road transmission',
+                sourceLabel: 'GT7 in-game gear count verified from GTPlus car list (Gears column)'
+            },
+            "Lexus|Lexus SC430 GT500 '08 (Gr.2)": {
+                maxGears: 6,
+                gearboxStyle: '6-speed GT7 race transmission',
+                sourceLabel: 'GT7 in-game gear count verified from GTPlus car list (Gears column)'
+            },
+            "Maserati|Maserati GranTurismo S '08": {
+                maxGears: 6,
+                gearboxStyle: '6-speed GT7 road transmission',
+                sourceLabel: 'GT7 in-game gear count verified from GTPlus car list (Gears column)'
+            },
+            "Mazda|Mazda Atenza Sedan XD L Package '15": {
+                maxGears: 6,
+                gearboxStyle: '6-speed GT7 road transmission',
+                sourceLabel: 'GT7 in-game gear count verified from GTPlus car list (Gears column)'
+            },
+            "Mazda|Mazda Roadster S (ND) '15": {
+                maxGears: 6,
+                gearboxStyle: '6-speed GT7 road transmission',
+                sourceLabel: 'GT7 in-game gear count verified from GTPlus car list (Gears column)'
+            },
+            "Mitsubishi|Mitsubishi Lancer Evolution IX MR GSR '06": {
+                maxGears: 6,
+                gearboxStyle: '6-speed GT7 road transmission',
+                sourceLabel: 'GT7 in-game gear count verified from GTPlus car list (Gears column)'
+            },
+            "Nissan|Nissan Fairlady Z Version S (Z33) '07": {
+                maxGears: 6,
+                gearboxStyle: '6-speed GT7 road transmission',
+                sourceLabel: 'GT7 in-game gear count verified from GTPlus car list (Gears column)'
+            },
+            "Nissan|Nissan Fairlady Z (Z34) '08": {
+                maxGears: 6,
+                gearboxStyle: '6-speed GT7 road transmission',
+                sourceLabel: 'GT7 in-game gear count verified from GTPlus car list (Gears column)'
+            },
+            "Nissan|Nissan GT-R Safety Car": {
+                maxGears: 6,
+                gearboxStyle: '6-speed GT7 road transmission',
+                sourceLabel: 'GT7 in-game gear count verified from GTPlus car list (Gears column)'
+            },
+            "Nissan|Nissan Skyline GT-R V･spec II Nür (R34) '02": {
+                maxGears: 6,
+                gearboxStyle: '6-speed GT7 road transmission',
+                sourceLabel: 'GT7 in-game gear count verified from GTPlus car list (Gears column)'
+            },
+            "Toyota|Toyota Alphard Executive Lounge '18": {
+                maxGears: 8,
+                gearboxStyle: '8-speed GT7 road transmission',
+                sourceLabel: 'GT7 in-game gear count verified from GTPlus car list (Gears column)'
+            },
+            "Toyota|Toyota Crown Athlete G '13": {
+                maxGears: 8,
+                gearboxStyle: '8-speed GT7 road transmission',
+                sourceLabel: 'GT7 in-game gear count verified from GTPlus car list (Gears column)'
+            },
+            "Toyota|Toyota GR Supra RZ '19": {
+                maxGears: 8,
+                gearboxStyle: '8-speed GT7 road transmission',
+                sourceLabel: 'GT7 in-game gear count verified from GTPlus car list (Gears column)'
+            }
+        };
+
+        const tuneCategoryDefinitions = {
+            fastLap: {
+                label: 'Fast Lap',
+                description: 'Shortest-lap setup with sharper response and shorter acceleration zones.',
+                topSpeedBias: -8,
+                finalDriveBias: 0.08,
+                aeroBias: 0.06,
+                frequencyBiasFront: 0.08,
+                frequencyBiasRear: 0.10,
+                arbBias: 1,
+                brakeForceBias: 1,
+                brakeBiasBias: -1,
+                lsdAccelBias: 2,
+                lsdDecelBias: 1
+            },
+            control: {
+                label: 'Control',
+                description: 'Turning-focused setup with smoother weight transfer and cleaner corner entry.',
+                topSpeedBias: -2,
+                finalDriveBias: 0.03,
+                aeroBias: 0.04,
+                frequencyBiasFront: -0.04,
+                frequencyBiasRear: -0.08,
+                arbBias: -1,
+                brakeForceBias: 0,
+                brakeBiasBias: -1,
+                lsdAccelBias: -2,
+                lsdDecelBias: -1
+            },
+            topSpeed: {
+                label: 'Top Speed',
+                description: 'Longer gearing and lower drag for straights, sectors, and speed traps.',
+                topSpeedBias: 18,
+                finalDriveBias: -0.18,
+                aeroBias: -0.10,
+                frequencyBiasFront: -0.03,
+                frequencyBiasRear: -0.01,
+                arbBias: 0,
+                brakeForceBias: 0,
+                brakeBiasBias: 1,
+                lsdAccelBias: 1,
+                lsdDecelBias: 0
+            },
+            stability: {
+                label: 'Stability',
+                description: 'Safer race setup with calmer rear rotation and more confidence over long runs.',
+                topSpeedBias: 4,
+                finalDriveBias: -0.04,
+                aeroBias: 0.08,
+                frequencyBiasFront: -0.06,
+                frequencyBiasRear: -0.02,
+                arbBias: -1,
+                brakeForceBias: 1,
+                brakeBiasBias: 2,
+                lsdAccelBias: -1,
+                lsdDecelBias: 3
+            }
+        };
+
+        function normalizeTuneCategory(value) {
+            return tuneCategoryDefinitions[value] ? value : 'fastLap';
+        }
+
+        function getTuneCategoryDefinition(value) {
+            return tuneCategoryDefinitions[normalizeTuneCategory(value)];
+        }
+
+        function buildGearboxLookupKeys(make, name) {
+            const variants = new Set([name]);
+            if (name.startsWith(`${make} `)) {
+                variants.add(name.slice(make.length + 1));
+            }
+
+            Array.from(variants).forEach(variant => {
+                const withoutCategorySuffix = variant.replace(/\s+\((Gr\.[^)]+)\)$/, '');
+                variants.add(withoutCategorySuffix);
+                variants.add(withoutCategorySuffix.replace(/\bGr\.(\d|B)\b$/, match => `(${match})`));
+            });
+
+            const keys = new Set();
+            variants.forEach(variant => {
+                const normalized = variant.trim();
+                if (!normalized) {
+                    return;
+                }
+                keys.add(`${make}|${normalized}`);
+                if (!normalized.startsWith(`${make} `)) {
+                    keys.add(`${make}|${make} ${normalized}`);
+                }
+            });
+
+            return Array.from(keys);
+        }
+
+        function buildGearboxDatabaseEntry(make, name, category, specs, transmission) {
+            const key = `${make}|${name}`;
+            const lookupKeys = buildGearboxLookupKeys(make, name);
+            const officialEntry = lookupKeys.map(lookupKey => officialGearboxTable[lookupKey]).find(Boolean) || null;
+            const gt7Entry = lookupKeys.map(lookupKey => gt7VerifiedGearboxTable[lookupKey]).find(Boolean) || null;
+            const manualEntry = lookupKeys.map(lookupKey => manualVerifiedGearboxTable[lookupKey]).find(Boolean) || null;
+            const resolvedEntry = officialEntry || gt7Entry || manualEntry || null;
+            const verificationStatus = officialEntry
+                ? 'Official Verified'
+                : gt7Entry
+                    ? 'GT7 Verified'
+                : manualEntry
+                    ? 'Manual Verified'
+                    : 'Calculated';
+            const sourceLabel = officialEntry
+                ? (officialEntry.sourceLabel || 'Official GT7 verified gearbox entry')
+                : gt7Entry
+                    ? gt7Entry.sourceLabel
+                : manualEntry
+                    ? manualEntry.sourceLabel
+                    : 'Calculated until an official or manually verified gearbox entry is added';
+
+            return {
+                key,
+                verificationStatus,
+                sourceLabel,
+                maxGears: resolvedEntry?.maxGears ?? transmission.maxGears,
+                gearboxStyle: resolvedEntry?.gearboxStyle ?? transmission.gearboxStyle,
+                categories: Object.entries(tuneCategoryDefinitions).reduce((result, [presetId, preset]) => {
+                    result[presetId] = {
+                        label: preset.label,
+                        description: preset.description
+                    };
+                    return result;
+                }, {})
+            };
+        }
+
         function buildOfficialCars() {
             const seenIds = new Set();
             return officialCarCatalogRaw.split('\n').map((line, index) => {
@@ -2695,6 +4003,8 @@ Zagato | IsoRivolta Zagato Vision Gran Turismo
                 const name = parts.slice(1).join(' | ') || make;
                 const category = parseCarCategory(name);
                 const specs = deriveCarSpecs(make, name, category);
+                const transmission = deriveTransmissionProfile(make, name, category, specs.powerNum, specs.weightNum, specs.drive);
+                const gearboxDatabase = buildGearboxDatabaseEntry(make, name, category, specs, transmission);
                 const baseId = slugifyId(`${make}-${name}`);
                 let id = baseId || `car-${index}`;
                 if (seenIds.has(id)) {
@@ -2714,6 +4024,9 @@ Zagato | IsoRivolta Zagato Vision Gran Turismo
                     weight: `${specs.weightNum} kg`,
                     weightNum: specs.weightNum,
                     drive: specs.drive,
+                    maxGears: gearboxDatabase.maxGears,
+                    gearboxStyle: gearboxDatabase.gearboxStyle,
+                    gearboxDatabase,
                     country,
                     isFree
                 };
@@ -2782,6 +4095,9 @@ Zagato | IsoRivolta Zagato Vision Gran Turismo
             const track = tracks.find((item) => item.id === trackId);
             const car = cars.find((item) => item.id === carId);
             if (!track || !car) return;
+            trackDetailState.trackId = trackId;
+            trackDetailState.carId = carId;
+            trackDetailState.tuneCategory = normalizeTuneCategory(trackDetailState.tuneCategory);
 
             document.getElementById('modal-title').textContent = `${car.name} | ${track.name}`;
             document.getElementById('modal-body').innerHTML = `
@@ -2920,14 +4236,150 @@ Zagato | IsoRivolta Zagato Vision Gran Turismo
             };
         }
 
+        function getNaturalFrequencyProfile(car, track, aeroDemand) {
+            const tuneStyle = track.tuneStyle || 'balanced';
+            const isRaceCar = car.category.startsWith('Gr.') || car.category === 'Gr.X';
+            const isNordschleife = track.familyKey === 'nurburgring' && String(track.layout || '').includes('Nordschleife');
+            const is4WD = car.drive === '4WD';
+            const isFWD = car.drive === 'FWD';
+            const powerToWeight = car.powerNum / Math.max(car.weightNum, 1) * 1000;
+
+            let frontBase;
+            if (car.category === 'Gr.1') frontBase = 3.55;
+            else if (car.category === 'Gr.2') frontBase = 3.25;
+            else if (car.category === 'Gr.3') frontBase = 2.95;
+            else if (car.category === 'Gr.4') frontBase = 2.65;
+            else if (car.category === 'Gr.B') frontBase = 2.45;
+            else if (car.category === 'Gr.X') frontBase = 3.15;
+            else frontBase = car.weightNum > 1550 ? 2.05 : car.weightNum > 1300 ? 2.18 : 2.32;
+
+            let styleBias = 0;
+            if (tuneStyle === 'technical' || tuneStyle === 'city') styleBias += 0.16;
+            if (tuneStyle === 'balanced') styleBias += 0.05;
+            if (tuneStyle === 'endurance') styleBias -= 0.04;
+            if (tuneStyle === 'highSpeed') styleBias -= 0.12;
+            if (tuneStyle === 'oval') styleBias -= 0.22;
+            if (tuneStyle === 'dirt') styleBias -= 0.55;
+            if (tuneStyle === 'snow') styleBias -= 0.72;
+            if (isNordschleife) styleBias -= 0.08;
+
+            const aeroBias = (aeroDemand.demand - 0.45) * (isRaceCar ? 0.22 : 0.16);
+            const weightBias = car.weightNum > 1450 ? 0.05 : car.weightNum < 1050 ? -0.04 : 0;
+            const powerBias = clampNumber((powerToWeight - 250) / 900, -0.04, 0.12);
+
+            const frontHz = clampNumber(
+                frontBase + styleBias + aeroBias + weightBias + powerBias,
+                isRaceCar ? 2.15 : 1.45,
+                isRaceCar ? 4.05 : 3.05
+            );
+
+            const rearDelta = isFWD ? -0.08 : is4WD ? 0.04 : 0.10;
+            const rearTrackBias = (tuneStyle === 'technical' || tuneStyle === 'city') ? 0.04 : (tuneStyle === 'highSpeed' || tuneStyle === 'oval') ? -0.03 : 0;
+            const rearHz = clampNumber(
+                frontHz + rearDelta + rearTrackBias,
+                isRaceCar ? 2.10 : 1.40,
+                isRaceCar ? 4.10 : 3.10
+            );
+
+            const averageHz = (frontHz + rearHz) / 2;
+            let valuation = 'Balanced frequency tune';
+            if (tuneStyle === 'dirt' || tuneStyle === 'snow') valuation = 'Compliance-biased frequency tune';
+            else if (averageHz >= 3.3) valuation = 'Ultra-responsive frequency tune';
+            else if (averageHz >= 2.7) valuation = 'Race-ready frequency tune';
+            else if (averageHz <= 1.9) valuation = 'Comfort-stability frequency tune';
+            else if (tuneStyle === 'highSpeed' || tuneStyle === 'oval') valuation = 'High-speed stability frequency tune';
+            else if (tuneStyle === 'technical' || tuneStyle === 'city') valuation = 'Rotation-focused frequency tune';
+
+            return {
+                front: Number(frontHz.toFixed(2)),
+                rear: Number(rearHz.toFixed(2)),
+                valuation
+            };
+        }
+
+        function buildPerformanceGearSet(finalDrive, topSpeedKph, context) {
+            const {
+                isRaceCar,
+                isHighSpeed,
+                isTechnical,
+                isOval,
+                isNordschleife,
+                is4WD,
+                isFWD,
+                powerNorm,
+                gearCount,
+                gearboxStyle
+            } = context;
+
+            if (gearCount === 1) {
+                return {
+                    finalDrive: Number(finalDrive.toFixed(2)),
+                    gears: [1],
+                    maxGear: 1,
+                    topSpeedKph,
+                    manualAdjustment: 'Single-speed EV performance calibration',
+                    gearboxStyle
+                };
+            }
+
+            let firstGear = isTechnical ? 3.34 : isHighSpeed ? 2.94 : isNordschleife ? 3.06 : 3.16;
+            if (isRaceCar) firstGear -= 0.08;
+            if (isOval) firstGear -= 0.10;
+            if (is4WD) firstGear += 0.08;
+            if (isFWD) firstGear -= 0.04;
+            firstGear -= powerNorm * 0.20;
+
+            let topGear = isOval ? 0.70 : isHighSpeed ? 0.74 : isNordschleife ? 0.79 : isTechnical ? 0.94 : 0.84;
+            if (!isRaceCar) topGear += 0.04;
+            if (isFWD) topGear += 0.02;
+            topGear += clampNumber((topSpeedKph - 300) / 700, -0.04, 0.10);
+
+            firstGear = clampNumber(firstGear, 2.55, 3.55);
+            topGear = clampNumber(topGear + ((7 - gearCount) * 0.035), 0.68, 1.18);
+
+            const spacingCurve = isTechnical ? 0.98 : isHighSpeed || isOval ? 1.08 : isNordschleife ? 1.04 : 1.02;
+            const gearSet = [];
+            for (let index = 0; index < gearCount; index++) {
+                const normalized = gearCount === 1 ? 0 : index / (gearCount - 1);
+                const shaped = Math.pow(normalized, spacingCurve);
+                const ratio = firstGear * Math.pow(topGear / firstGear, shaped);
+                gearSet.push(Number(ratio.toFixed(3)));
+            }
+
+            if (gearSet.length > 0) gearSet[0] = Number((gearSet[0] * (isTechnical ? 1.02 : 1.00)).toFixed(3));
+            if (gearSet.length > 1) gearSet[1] = Number((gearSet[1] * (isTechnical ? 1.015 : 1.00)).toFixed(3));
+            if (gearSet.length > 2 && (isHighSpeed || isOval)) gearSet[gearSet.length - 2] = Number((gearSet[gearSet.length - 2] * 0.99).toFixed(3));
+            if (gearSet.length > 1 && (isHighSpeed || isOval)) gearSet[gearSet.length - 1] = Number((gearSet[gearSet.length - 1] * 0.98).toFixed(3));
+
+            for (let index = 1; index < gearSet.length; index++) {
+                const minGap = gearCount <= 4 ? 0.20 : gearCount === 5 ? 0.17 : gearCount >= 8 ? 0.10 : 0.12;
+                gearSet[index] = Math.min(gearSet[index], Number((gearSet[index - 1] - minGap).toFixed(3)));
+            }
+
+            return {
+                finalDrive: Number(finalDrive.toFixed(2)),
+                gears: gearSet,
+                maxGear: gearCount,
+                topSpeedKph,
+                manualAdjustment: isTechnical
+                    ? `Close lower gears for ${gearCount}-speed corner exit performance`
+                    : isHighSpeed || isOval
+                        ? `Long final gears for ${gearCount}-speed top speed performance`
+                        : `Balanced ${gearCount}-speed performance spread`,
+                gearboxStyle
+            };
+        }
+
         // Smart Tune Generator - Creates optimal tune for any car on any track
-        function generateTune(car, track) {
+        function generateTune(car, track, tuneCategory = 'fastLap') {
             let baseSpring = 5;
             let baseRideHeight = 90;
             let baseTirePressure = 28;
             let baseFinalGear = 0;
 
             const tuneStyle = track.tuneStyle || 'balanced';
+            const activeCategory = normalizeTuneCategory(tuneCategory);
+            const categoryProfile = getTuneCategoryDefinition(activeCategory);
             const isHighSpeed = ['highSpeed', 'endurance'].includes(tuneStyle);
             const isTechnical = ['technical', 'city', 'dirt', 'snow'].includes(tuneStyle);
             const isOval = tuneStyle === 'oval';
@@ -2966,21 +4418,43 @@ Zagato | IsoRivolta Zagato Vision Gran Turismo
             const isFWD = car.drive === 'FWD';
             const isRaceCar = car.category.startsWith('Gr.') || car.category === 'Gr.X';
             const aeroDemand = getTrackAeroDemand(track);
+            const effectiveAeroDemand = {
+                ...aeroDemand,
+                demand: clampNumber(aeroDemand.demand + categoryProfile.aeroBias, 0.05, 1)
+            };
+            const naturalFrequency = getNaturalFrequencyProfile(car, track, effectiveAeroDemand);
 
             if (isLight) { baseSpring -= 1; }
             if (isHeavy) { baseSpring += 1; baseRideHeight += 5; }
             if (isPowerful) { baseTirePressure += 1; }
             if (is4WD) { baseFinalGear += 0.04; }
             if (isFWD) { baseFinalGear += 0.06; baseTirePressure += 1; }
+            baseFinalGear += categoryProfile.finalDriveBias;
+
+            naturalFrequency.front = Number(clampNumber(
+                naturalFrequency.front + categoryProfile.frequencyBiasFront,
+                isRaceCar ? 2.15 : 1.45,
+                isRaceCar ? 4.05 : 3.05
+            ).toFixed(2));
+            naturalFrequency.rear = Number(clampNumber(
+                naturalFrequency.rear + categoryProfile.frequencyBiasRear,
+                isRaceCar ? 2.10 : 1.40,
+                isRaceCar ? 4.10 : 3.10
+            ).toFixed(2));
+            naturalFrequency.valuation = `${categoryProfile.label} | ${naturalFrequency.valuation}`;
+
+            const frontSpringScale = clampNumber(((naturalFrequency.front - 1.4) / 2.7) * 9 + 1, 1, 10);
+            const rearSpringScale = clampNumber(((naturalFrequency.rear - 1.4) / 2.7) * 9 + 1, 1, 10);
 
             let arbBase = isRaceCar ? 6 : 4;
             if (isHighSpeed || isOval) arbBase -= 1;
             if (isTechnical) arbBase += 1;
             if (isNordschleife) arbBase += 1;
+            arbBase += categoryProfile.arbBias;
             const arbFront = clampNumber(arbBase + (isFWD ? 1 : 0), 1, 10);
             const arbRear = clampNumber(arbBase + (isFWD ? 0 : 1), 1, 10);
 
-            const damperBase = isRaceCar ? 34 : 28;
+            const damperBase = (isRaceCar ? 32 : 26) + Math.round((naturalFrequency.front - 2.0) * 4.2);
             const damperComp = clampNumber(damperBase + (isHeavy ? 2 : 0) + (isHighSpeed ? 2 : 0) - (isTechnical ? 1 : 0), 18, 45);
             const damperRebound = clampNumber(damperComp + 10 + (isNordschleife ? 2 : 0), 28, 58);
 
@@ -3006,7 +4480,7 @@ Zagato | IsoRivolta Zagato Vision Gran Turismo
                 1
             );
             const frontDemand = clampNumber(
-                (aeroDemand.demand * 0.84) +
+                (effectiveAeroDemand.demand * 0.84) +
                 (carAeroPreference * 0.18) +
                 (is4WD ? 0.04 : 0) -
                 (isFWD ? 0.03 : 0),
@@ -3016,7 +4490,7 @@ Zagato | IsoRivolta Zagato Vision Gran Turismo
             const rearDemand = clampNumber(
                 frontDemand +
                 (isFWD ? 0.05 : 0.08) +
-                (aeroDemand.avgSpeedMph < 100 ? 0.04 : 0) -
+                (effectiveAeroDemand.avgSpeedMph < 100 ? 0.04 : 0) -
                 (isOval ? 0.05 : 0),
                 0,
                 1
@@ -3035,50 +4509,52 @@ Zagato | IsoRivolta Zagato Vision Gran Turismo
 
             const topSpeedTarget = isOval ? 385 : isHighSpeed ? 345 : isNordschleife ? 325 : isTechnical ? 288 : 308;
             const powerInfluence = clampNumber(50 * (powerWeight * 1000 / 500), -40, 90);
-            const styleTopSpeed = topSpeedTarget + powerInfluence;
-            const trackSpeedHint = clampNumber(Math.round((aeroDemand.avgSpeedMph * 1.60934 * 1.55) + 40), 220, 420);
+            const styleTopSpeed = topSpeedTarget + powerInfluence + categoryProfile.topSpeedBias;
+            const trackSpeedHint = clampNumber(Math.round((effectiveAeroDemand.avgSpeedMph * 1.60934 * 1.55) + 40), 220, 420);
             const topSpeedKph = clampNumber(Math.round((trackSpeedHint * 0.65) + (styleTopSpeed * 0.35)), 220, 420);
 
             const hpPerTon = powerWeight * 1000;
             const powerNorm = clampNumber((hpPerTon - 220) / 480, 0, 1);
-            const demandBias = clampNumber((aeroDemand.demand - 0.42) * 0.22, -0.06, 0.14);
+            const demandBias = clampNumber((effectiveAeroDemand.demand - 0.42) * 0.22, -0.06, 0.14);
             let finalDrive = 8.08 - (0.014 * topSpeedKph);
             finalDrive *= (1 - (0.10 * powerNorm));
             finalDrive *= (1 + demandBias);
             if (is4WD) finalDrive *= 1.02;
             if (isFWD) finalDrive *= 1.04;
             finalDrive = clampNumber(finalDrive + baseFinalGear, isRaceCar ? 2.05 : 2.2, isRaceCar ? 5.2 : 5.8);
+            const gearRatios = buildPerformanceGearSet(finalDrive, topSpeedKph, {
+                isRaceCar,
+                isHighSpeed,
+                isTechnical,
+                isOval,
+                isNordschleife,
+                is4WD,
+                isFWD,
+                powerNorm,
+                gearCount: car.maxGears || 6,
+                gearboxStyle: car.gearboxStyle || 'Calculated performance gearbox'
+            });
 
-            let gearSet;
-            if (isOval || isHighSpeed) {
-                gearSet = isRaceCar
-                    ? [2.90, 2.10, 1.60, 1.29, 1.08, 0.90]
-                    : [3.00, 2.15, 1.62, 1.30, 1.07, 0.88];
-            } else if (isTechnical) {
-                gearSet = isRaceCar
-                    ? [3.20, 2.35, 1.78, 1.42, 1.18, 0.98]
-                    : [3.28, 2.40, 1.82, 1.45, 1.20, 1.00];
-            } else if (isNordschleife) {
-                gearSet = isRaceCar
-                    ? [3.08, 2.25, 1.72, 1.38, 1.14, 0.95]
-                    : [3.14, 2.30, 1.75, 1.40, 1.16, 0.96];
-            } else {
-                gearSet = isRaceCar
-                    ? [3.05, 2.22, 1.68, 1.35, 1.12, 0.93]
-                    : [3.12, 2.26, 1.70, 1.36, 1.13, 0.94];
-            }
-
-            const brakeForce = clampNumber(Math.round(4 + (isRaceCar ? 1 : 0) + (isHighSpeed ? 1 : 0) + (isTechnical ? 0 : 0)), 2, 10);
-            const brakeBias = clampNumber(Math.round((isFWD ? 58 : is4WD ? 55 : 53) + (isHighSpeed ? 1 : 0) - (isTechnical ? 1 : 0)), 48, 64);
+            const brakeForce = clampNumber(Math.round(4 + (isRaceCar ? 1 : 0) + (isHighSpeed ? 1 : 0) + (isTechnical ? 0 : 0) + categoryProfile.brakeForceBias), 2, 10);
+            const brakeBias = clampNumber(Math.round((isFWD ? 58 : is4WD ? 55 : 53) + (isHighSpeed ? 1 : 0) - (isTechnical ? 1 : 0) + categoryProfile.brakeBiasBias), 48, 64);
 
             const lsdInitial = clampNumber(is4WD ? 16 : isFWD ? 12 : 10, 5, 25);
-            const lsdAccel = clampNumber(Math.round(38 + (isPowerful ? 6 : 0) + (is4WD ? 3 : 0) - (isFWD ? 4 : 0)), 20, 60);
-            const lsdDecel = clampNumber(Math.round(28 + (isHighSpeed ? 2 : 0) + (is4WD ? 2 : 0)), 18, 50);
+            const lsdAccel = clampNumber(Math.round(38 + (isPowerful ? 6 : 0) + (is4WD ? 3 : 0) - (isFWD ? 4 : 0) + categoryProfile.lsdAccelBias), 20, 60);
+            const lsdDecel = clampNumber(Math.round(28 + (isHighSpeed ? 2 : 0) + (is4WD ? 2 : 0) + categoryProfile.lsdDecelBias), 18, 50);
 
             return {
+                category: {
+                    id: activeCategory,
+                    label: categoryProfile.label,
+                    description: categoryProfile.description
+                },
+                gearboxMeta: car.gearboxDatabase || buildGearboxDatabaseEntry(car.make, car.name, car.category, { powerNum: car.powerNum, weightNum: car.weightNum, drive: car.drive }, {
+                    maxGears: car.maxGears || 6,
+                    gearboxStyle: car.gearboxStyle || 'Calculated performance gearbox'
+                }),
                 suspension: {
-                    frontSpring: Math.max(1, Math.min(10, baseSpring)),
-                    rearSpring: Math.max(1, Math.min(10, baseSpring + (isFWD ? 0.5 : 0))),
+                    frontSpring: Number(frontSpringScale.toFixed(1)),
+                    rearSpring: Number(rearSpringScale.toFixed(1)),
                     frontRideHeight: baseRideHeight,
                     rearRideHeight: baseRideHeight + 5,
                     frontCamber: -2.5,
@@ -3086,16 +4562,8 @@ Zagato | IsoRivolta Zagato Vision Gran Turismo
                     frontToe: 0.0,
                     rearToe: 0.1
                 },
-                gearRatios: {
-                    finalDrive,
-                    gear1: gearSet[0],
-                    gear2: gearSet[1],
-                    gear3: gearSet[2],
-                    gear4: gearSet[3],
-                    gear5: gearSet[4],
-                    gear6: gearSet[5],
-                    topSpeedKph
-                },
+                naturalFrequency,
+                gearRatios,
                 tirePressure: {
                     frontLeft: baseTirePressure,
                     frontRight: baseTirePressure,
@@ -3128,7 +4596,7 @@ Zagato | IsoRivolta Zagato Vision Gran Turismo
         // Subscription management
         let subscription = { active: false, expiresAt: null };
         let userAccount = { loggedIn: false, displayName: '', email: '' };
-        let trackDetailState = { trackId: null, activeCornerId: 1, carFilter: '', carId: '' };
+        let trackDetailState = { trackId: null, activeCornerId: 1, carFilter: '', carId: '', tuneCategory: 'fastLap' };
 
         function escapeHtml(value) {
             return String(value ?? '')
@@ -3190,10 +4658,30 @@ Zagato | IsoRivolta Zagato Vision Gran Turismo
             `;
         }
 
+        function renderTuneCategorySelector(car, activeCategory = 'fastLap') {
+            const selected = normalizeTuneCategory(activeCategory);
+            return `
+                <div class="tune-category-switcher">
+                    ${Object.entries(tuneCategoryDefinitions).map(([presetId, preset]) => `
+                        <button class="tune-category-chip ${presetId === selected ? 'active' : ''}" onclick="setTuneCategory('${presetId}')">${escapeHtml(preset.label)}</button>
+                    `).join('')}
+                </div>
+                <div class="tune-category-note">${escapeHtml(getTuneCategoryDefinition(selected).description)}</div>
+            `;
+        }
+
+        function setTuneCategory(category) {
+            trackDetailState.tuneCategory = normalizeTuneCategory(category);
+            if (trackDetailState.trackId && trackDetailState.carId) {
+                showCarTuneForTrack(trackDetailState.trackId, trackDetailState.carId);
+            }
+        }
+
         function renderGt7TuneSheet(track, car, tune) {
             const tireCompound = getSuggestedTireCompound(car, track);
             const powerToWeight = (car.powerNum / car.weightNum * 1000).toFixed(1);
             const ratings = buildTuneRatings(car, tune);
+            const verificationClass = tune.gearboxMeta.verificationStatus === 'Official Verified' ? 'verified' : '';
 
             const ratingMarkup = ratings.map((rating) => `
                 <div class="gt7-rating-row">
@@ -3206,12 +4694,15 @@ Zagato | IsoRivolta Zagato Vision Gran Turismo
             const rows = [
                 '<div class="gt7-sheet-section">Base Sheet</div>',
                 renderTuneSingleRow('Category', escapeHtml(car.category), escapeHtml(track.typeLabel || 'Road')),
+                renderTuneSingleRow('Tune Category', escapeHtml(tune.category.label), escapeHtml(tune.category.description)),
                 renderTuneSingleRow('Power', `${car.powerNum} HP`, `${powerToWeight} HP/t`),
                 renderTuneSingleRow('Weight', `${car.weightNum.toLocaleString()} kg`, escapeHtml(car.drive)),
+                renderTuneSingleRow('Gearbox Data', escapeHtml(tune.gearboxMeta.verificationStatus), escapeHtml(tune.gearboxMeta.sourceLabel)),
                 renderTunePairRow('Tires', escapeHtml(tireCompound), escapeHtml(tireCompound), escapeHtml(track.surface)),
                 renderTunePairRow('Tire Pressure', `${tune.tirePressure.frontLeft} PSI`, `${tune.tirePressure.rearLeft} PSI`, 'Hotlap'),
                 '<div class="gt7-sheet-section">Suspension</div>',
                 renderTunePairRow('Spring Rate', `${formatTuneNumber(tune.suspension.frontSpring, 1)} / 10`, `${formatTuneNumber(tune.suspension.rearSpring, 1)} / 10`, 'Calculated'),
+                renderTunePairRow('Natural Frequency', `${formatTuneNumber(tune.naturalFrequency.front, 2)} Hz`, `${formatTuneNumber(tune.naturalFrequency.rear, 2)} Hz`, escapeHtml(tune.naturalFrequency.valuation)),
                 renderTunePairRow('Ride Height', `${tune.suspension.frontRideHeight} mm`, `${tune.suspension.rearRideHeight} mm`, 'Balance'),
                 renderTunePairRow('Anti-Roll Bars', `${tune.antiRollBars.front}`, `${tune.antiRollBars.rear}`, 'Chassis'),
                 renderTunePairRow('Damping (Comp.)', `${tune.dampers.frontCompression}`, `${tune.dampers.rearCompression}`, 'Shock'),
@@ -3220,10 +4711,22 @@ Zagato | IsoRivolta Zagato Vision Gran Turismo
                 renderTunePairRow('Toe', `${formatTuneNumber(tune.suspension.frontToe, 2)}`, `${formatTuneNumber(tune.suspension.rearToe, 2)}`, 'Align'),
                 '<div class="gt7-sheet-section">Drivetrain</div>',
                 renderTuneSingleRow('Final Drive', tune.gearRatios.finalDrive.toFixed(2), `${tune.gearRatios.topSpeedKph} km/h`),
-                renderTuneSingleRow('Gear Set', `${tune.gearRatios.gear1.toFixed(2)} / ${tune.gearRatios.gear2.toFixed(2)} / ${tune.gearRatios.gear3.toFixed(2)}`, `${tune.gearRatios.gear4.toFixed(2)} / ${tune.gearRatios.gear5.toFixed(2)} / ${tune.gearRatios.gear6.toFixed(2)}`),
+                renderTuneSingleRow('Max Gears', `${tune.gearRatios.maxGear}-speed`, escapeHtml(tune.gearRatios.gearboxStyle)),
+                renderTuneSingleRow('Performance Gearbox', escapeHtml(tune.gearRatios.manualAdjustment), `${tune.gearRatios.topSpeedKph} km/h target`),
                 renderTuneSingleRow('Brake Balance', `${tune.brakes.frontBias}% front`, `Force ${tune.brakes.brakeForce}/10`),
                 renderTuneSingleRow('LSD', `Init ${tune.lsd.initialTorque}`, `Accel ${tune.lsd.accelerationSensitivity} | Decel ${tune.lsd.brakingSensitivity}`)
             ];
+
+            tune.gearRatios.gears.forEach((ratio, index) => {
+                const isTopGear = index === tune.gearRatios.gears.length - 1;
+                let gearNote = 'Performance step';
+                if (index === 0) gearNote = 'Launch';
+                else if (index === 1) gearNote = 'Traction exit';
+                else if (isTopGear) gearNote = 'Top-end overdrive';
+                else if (index >= tune.gearRatios.gears.length - 2) gearNote = 'High-speed carry';
+                else if (index === 2) gearNote = 'Slow-medium corners';
+                rows.splice(rows.length - 2, 0, renderTuneSingleRow(`Gear ${index + 1}`, ratio.toFixed(3), gearNote));
+            });
 
             if (tune.aero) {
                 rows.push('<div class="gt7-sheet-section">Aerodynamics</div>');
@@ -3252,6 +4755,7 @@ Zagato | IsoRivolta Zagato Vision Gran Turismo
                                 <div class="gt7-side-stat"><span>Drivetrain</span><strong>${escapeHtml(car.drive)}</strong></div>
                                 <div class="gt7-side-stat"><span>Track Focus</span><strong>${escapeHtml(track.typeLabel || track.tuneStyle || 'Road')}</strong></div>
                             </div>
+                            <div class="gt7-verify-badge ${verificationClass}">${escapeHtml(tune.gearboxMeta.verificationStatus)} | ${escapeHtml(tune.category.label)}</div>
                             <div class="gt7-ratings">
                                 <h5>Performance Index</h5>
                                 ${ratingMarkup}
@@ -3268,6 +4772,7 @@ Zagato | IsoRivolta Zagato Vision Gran Turismo
                                     <div>${escapeHtml(track.name)}</div>
                                 </div>
                             </div>
+                            ${renderTuneCategorySelector(car, tune.category.id)}
                             <div class="gt7-sheet-table">
                                 <div class="gt7-sheet-columns">
                                     <div>Setting</div>
@@ -4131,11 +5636,13 @@ Zagato | IsoRivolta Zagato Vision Gran Turismo
         function showCarTuneForTrack(trackId, carId) {
             const track = tracks.find(t => t.id === trackId);
             const car = cars.find(c => c.id === carId);
+            trackDetailState.trackId = trackId;
+            trackDetailState.carId = carId;
             if (!track || !car) {
                 document.getElementById('tune-display').innerHTML = '';
                 return;
             }
-            const tune = generateTune(car, track);
+            const tune = generateTune(car, track, trackDetailState.tuneCategory);
 
             document.getElementById('tune-display').innerHTML = renderGt7TuneSheet(track, car, tune);
         }
