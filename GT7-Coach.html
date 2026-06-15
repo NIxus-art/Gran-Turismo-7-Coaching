@@ -3982,14 +3982,14 @@ Zagato | IsoRivolta Zagato Vision Gran Turismo
             drift: {
                 label: 'Drift',
                 description: 'Gran Turismo 7-style slide setup with freer rotation, faster transitions, and stronger rear lock.',
-                topSpeedBias: 8,
+                topSpeedBias: -12,
                 finalDriveBias: 0.16,
                 aeroBias: -0.16,
                 frequencyBiasFront: -0.10,
                 frequencyBiasRear: -0.18,
                 arbBias: 1,
                 brakeForceBias: 0,
-                brakeBiasBias: 3,
+                brakeBiasBias: -2,
                 lsdAccelBias: 10,
                 lsdDecelBias: -3
             }
@@ -6052,16 +6052,24 @@ Zagato | IsoRivolta Zagato Vision Gran Turismo
                 1
             );
 
-            const aeroFront = Math.round(clampNumber(
+            let aeroFront = Math.round(clampNumber(
                 aeroSpec.minFront + ((aeroSpec.maxFront - aeroSpec.minFront) * frontDemand),
                 aeroSpec.minFront,
                 aeroSpec.maxFront
             ));
-            const aeroRear = Math.round(clampNumber(
+            let aeroRear = Math.round(clampNumber(
                 aeroFront + aeroSpec.rearBias + ((aeroSpec.maxFront - aeroSpec.minFront) * 0.18 * rearDemand),
                 aeroFront + Math.max(14, Math.round(aeroSpec.rearBias * 0.65)),
                 aeroSpec.maxRear
             ));
+            if (isDragTune) {
+                aeroFront = Math.round(clampNumber(aeroFront * 0.88, aeroSpec.minFront, aeroSpec.maxFront));
+                aeroRear = Math.round(clampNumber(aeroRear * 0.90, aeroFront + Math.max(14, Math.round(aeroSpec.rearBias * 0.65)), aeroSpec.maxRear));
+            }
+            if (isDriftTune) {
+                aeroFront = Math.round(clampNumber(aeroFront * 0.82, aeroSpec.minFront, aeroSpec.maxFront));
+                aeroRear = Math.round(clampNumber(aeroRear * 0.78, aeroFront + Math.max(14, Math.round(aeroSpec.rearBias * 0.65)), aeroSpec.maxRear));
+            }
 
             const topSpeedTarget = isOval ? 385 : isHighSpeed ? 345 : isNordschleife ? 325 : isTechnical ? 288 : 308;
             const powerInfluence = clampNumber(50 * (powerWeight * 1000 / 500), -40, 90);
@@ -6132,10 +6140,10 @@ Zagato | IsoRivolta Zagato Vision Gran Turismo
                 naturalFrequency,
                 gearRatios,
                 tirePressure: {
-                    frontLeft: baseTirePressure,
-                    frontRight: baseTirePressure,
-                    rearLeft: baseTirePressure + 1,
-                    rearRight: baseTirePressure + 1
+                    frontLeft: baseTirePressure + (isDriftTune ? 1 : 0),
+                    frontRight: baseTirePressure + (isDriftTune ? 1 : 0),
+                    rearLeft: baseTirePressure + (isDriftTune ? -1 : 1),
+                    rearRight: baseTirePressure + (isDriftTune ? -1 : 1)
                 },
                 brakes: {
                     frontBias: brakeBias,
@@ -6185,10 +6193,22 @@ Zagato | IsoRivolta Zagato Vision Gran Turismo
             return Number(value).toFixed(digits);
         }
 
-        function getSuggestedTireCompound(car, track) {
+        function getSuggestedTireCompound(car, track, tuneCategory = 'fastLap') {
             const tuneStyle = track.tuneStyle || 'balanced';
+            const activeCategory = normalizeTuneCategory(tuneCategory);
             if (tuneStyle === 'dirt') return 'Dirt';
             if (tuneStyle === 'snow') return 'Snow';
+            if (activeCategory === 'drift') {
+                if (car.category.startsWith('Gr.') || car.category === 'Gr.X') return 'Sports: Hard';
+                if (car.powerNum > 650) return 'Comfort: Hard';
+                if (car.powerNum > 360) return 'Comfort: Medium';
+                return 'Comfort: Soft';
+            }
+            if (activeCategory === 'drag') {
+                if (car.category.startsWith('Gr.') || car.category === 'Gr.X') return 'Racing: Hard';
+                if (car.powerNum > 520) return 'Sports: Soft';
+                return 'Sports: Medium';
+            }
             if (car.category.startsWith('Gr.') || car.category === 'Gr.X') {
                 if (['technical', 'city'].includes(tuneStyle)) return 'Racing: Soft';
                 if (['highSpeed', 'endurance', 'oval'].includes(tuneStyle)) return 'Racing: Medium';
@@ -6317,7 +6337,7 @@ Zagato | IsoRivolta Zagato Vision Gran Turismo
         }
 
         function renderGt7TuneSheet(track, car, tune) {
-            const tireCompound = tune.tireCompound || getSuggestedTireCompound(car, track);
+            const tireCompound = tune.tireCompound || getSuggestedTireCompound(car, track, tune.category?.id);
             const powerToWeight = (car.powerNum / car.weightNum * 1000).toFixed(1);
             const ratings = buildTuneRatings(car, tune);
             const verificationClass = tune.gearboxMeta.verificationStatus === 'Official Verified' ? 'verified' : '';
