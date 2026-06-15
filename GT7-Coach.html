@@ -3964,6 +3964,34 @@ Zagato | IsoRivolta Zagato Vision Gran Turismo
                 brakeBiasBias: 2,
                 lsdAccelBias: -1,
                 lsdDecelBias: 3
+            },
+            drag: {
+                label: 'Drag',
+                description: 'Gran Turismo 7-style straight-line setup with lower drag, harder launch lock, and longer gearing.',
+                topSpeedBias: 28,
+                finalDriveBias: -0.30,
+                aeroBias: -0.22,
+                frequencyBiasFront: -0.14,
+                frequencyBiasRear: -0.04,
+                arbBias: 0,
+                brakeForceBias: -1,
+                brakeBiasBias: 3,
+                lsdAccelBias: 8,
+                lsdDecelBias: -4
+            },
+            drift: {
+                label: 'Drift',
+                description: 'Gran Turismo 7-style slide setup with freer rotation, faster transitions, and stronger rear lock.',
+                topSpeedBias: 8,
+                finalDriveBias: 0.16,
+                aeroBias: -0.16,
+                frequencyBiasFront: -0.10,
+                frequencyBiasRear: -0.18,
+                arbBias: 1,
+                brakeForceBias: 0,
+                brakeBiasBias: 3,
+                lsdAccelBias: 10,
+                lsdDecelBias: -3
             }
         };
 
@@ -5881,6 +5909,8 @@ Zagato | IsoRivolta Zagato Vision Gran Turismo
             const tuneStyle = track.tuneStyle || 'balanced';
             const activeCategory = normalizeTuneCategory(tuneCategory);
             const categoryProfile = getTuneCategoryDefinition(activeCategory);
+            const isDragTune = activeCategory === 'drag';
+            const isDriftTune = activeCategory === 'drift';
             const isHighSpeed = ['highSpeed', 'endurance'].includes(tuneStyle);
             const isTechnical = ['technical', 'city', 'dirt', 'snow'].includes(tuneStyle);
             const isOval = tuneStyle === 'oval';
@@ -5909,6 +5939,18 @@ Zagato | IsoRivolta Zagato Vision Gran Turismo
                 baseRideHeight += 5;
                 baseTirePressure -= 1;
                 baseFinalGear += 0.06;
+            }
+            if (isDragTune) {
+                baseSpring -= 1;
+                baseRideHeight -= 12;
+                baseTirePressure += 3;
+                baseFinalGear -= 0.24;
+            }
+            if (isDriftTune) {
+                baseSpring -= 1;
+                baseRideHeight += 6;
+                baseTirePressure -= 1;
+                baseFinalGear += 0.20;
             }
 
             const powerWeight = car.powerNum / car.weightNum;
@@ -5943,6 +5985,11 @@ Zagato | IsoRivolta Zagato Vision Gran Turismo
                 isRaceCar ? 4.10 : 3.10
             ).toFixed(2));
             naturalFrequency.valuation = `${categoryProfile.label} | ${naturalFrequency.valuation}`;
+            if (isDragTune) {
+                naturalFrequency.valuation = 'Drag | Launch-focused frequency tune';
+            } else if (isDriftTune) {
+                naturalFrequency.valuation = 'Drift | Slide-transition frequency tune';
+            }
 
             const frontSpringScale = clampNumber(((naturalFrequency.front - 1.4) / 2.7) * 9 + 1, 1, 10);
             const rearSpringScale = clampNumber(((naturalFrequency.rear - 1.4) / 2.7) * 9 + 1, 1, 10);
@@ -6047,9 +6094,19 @@ Zagato | IsoRivolta Zagato Vision Gran Turismo
             const brakeForce = clampNumber(Math.round(4 + (isRaceCar ? 1 : 0) + (isHighSpeed ? 1 : 0) + (isTechnical ? 0 : 0) + categoryProfile.brakeForceBias), 2, 10);
             const brakeBias = clampNumber(Math.round((isFWD ? 58 : is4WD ? 55 : 53) + (isHighSpeed ? 1 : 0) - (isTechnical ? 1 : 0) + categoryProfile.brakeBiasBias), 48, 64);
 
-            const lsdInitial = clampNumber(is4WD ? 16 : isFWD ? 12 : 10, 5, 25);
-            const lsdAccel = clampNumber(Math.round(38 + (isPowerful ? 6 : 0) + (is4WD ? 3 : 0) - (isFWD ? 4 : 0) + categoryProfile.lsdAccelBias), 20, 60);
-            const lsdDecel = clampNumber(Math.round(28 + (isHighSpeed ? 2 : 0) + (is4WD ? 2 : 0) + categoryProfile.lsdDecelBias), 18, 50);
+            let lsdInitial = clampNumber(is4WD ? 16 : isFWD ? 12 : 10, 5, 25);
+            let lsdAccel = clampNumber(Math.round(38 + (isPowerful ? 6 : 0) + (is4WD ? 3 : 0) - (isFWD ? 4 : 0) + categoryProfile.lsdAccelBias), 20, 60);
+            let lsdDecel = clampNumber(Math.round(28 + (isHighSpeed ? 2 : 0) + (is4WD ? 2 : 0) + categoryProfile.lsdDecelBias), 18, 50);
+            if (isDragTune) {
+                lsdInitial = clampNumber(lsdInitial + 4, 5, 25);
+                lsdAccel = clampNumber(lsdAccel + 4, 20, 60);
+                lsdDecel = clampNumber(lsdDecel - 4, 18, 50);
+            }
+            if (isDriftTune) {
+                lsdInitial = clampNumber(lsdInitial + 8, 5, 25);
+                lsdAccel = clampNumber(lsdAccel + 6, 20, 60);
+                lsdDecel = clampNumber(lsdDecel - 6, 18, 50);
+            }
 
             const verifiedTuneOverride = resolveVerifiedTuneOverride(car, track);
             const calculatedTune = {
@@ -6066,11 +6123,11 @@ Zagato | IsoRivolta Zagato Vision Gran Turismo
                     frontSpring: Number(frontSpringScale.toFixed(1)),
                     rearSpring: Number(rearSpringScale.toFixed(1)),
                     frontRideHeight: baseRideHeight,
-                    rearRideHeight: baseRideHeight + 5,
-                    frontCamber: -2.5,
-                    rearCamber: -2.0,
-                    frontToe: 0.0,
-                    rearToe: 0.1
+                    rearRideHeight: baseRideHeight + (isDragTune ? 10 : isDriftTune ? 12 : 5),
+                    frontCamber: isDriftTune ? -3.2 : isDragTune ? -1.0 : -2.5,
+                    rearCamber: isDriftTune ? -1.2 : isDragTune ? -0.8 : -2.0,
+                    frontToe: isDriftTune ? -0.15 : isDragTune ? 0.0 : 0.0,
+                    rearToe: isDriftTune ? 0.25 : isDragTune ? 0.2 : 0.1
                 },
                 naturalFrequency,
                 gearRatios,
@@ -6220,6 +6277,8 @@ Zagato | IsoRivolta Zagato Vision Gran Turismo
                 profile.rear.brakingSensitivity = tune.lsd.brakingSensitivity;
                 profile.centreDifferential = 'Fully Customisable';
                 profile.torqueSplit = (
+                    tune.category.id === 'drift' ? '10 : 90' :
+                    tune.category.id === 'drag' ? '20 : 80' :
                     tune.category.id === 'control' ? '45 : 55' :
                     tune.category.id === 'stability' ? '40 : 60' :
                     tune.category.id === 'topSpeed' ? '30 : 70' :
