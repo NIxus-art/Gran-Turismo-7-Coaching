@@ -1121,7 +1121,7 @@
         .gt7-sheet-columns,
         .gt7-sheet-row {
             display: grid;
-            grid-template-columns: minmax(150px, 1.5fr) minmax(92px, 0.8fr) minmax(92px, 0.8fr) minmax(120px, 1fr);
+            grid-template-columns: minmax(190px, 1.7fr) minmax(52px, 0.45fr) minmax(92px, 0.8fr) minmax(92px, 0.8fr);
             gap: 14px;
             align-items: center;
             padding: 10px 14px;
@@ -1151,6 +1151,23 @@
             color: #d6dbe2;
             font-size: 13px;
         }
+        .gt7-sheet-label span {
+            display: block;
+        }
+        .gt7-sheet-label small {
+            display: block;
+            margin-top: 4px;
+            color: #97a2af;
+            font-size: 11px;
+            line-height: 1.35;
+        }
+        .gt7-sheet-unit {
+            color: #8f9aa8;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
         .gt7-sheet-front,
         .gt7-sheet-rear,
         .gt7-sheet-value {
@@ -1161,7 +1178,13 @@
         }
         .gt7-sheet-row.single .gt7-sheet-front,
         .gt7-sheet-row.single .gt7-sheet-rear {
-            color: #5f6976;
+            color: #ffffff;
+        }
+        .gt7-sheet-row.single .gt7-sheet-front {
+            grid-column: 3 / 5;
+        }
+        .gt7-sheet-row.single .gt7-sheet-rear {
+            display: none;
         }
         .gt7-sheet-value {
             color: #cfd6de;
@@ -1308,7 +1331,7 @@
             }
             .gt7-sheet-columns,
             .gt7-sheet-row {
-                grid-template-columns: minmax(120px, 1.4fr) repeat(3, minmax(78px, 1fr));
+                grid-template-columns: minmax(150px, 1.4fr) minmax(44px, 0.45fr) minmax(78px, 1fr) minmax(78px, 1fr);
                 gap: 10px;
                 padding: 12px;
             }
@@ -1336,10 +1359,13 @@
                 grid-template-columns: 1fr;
             }
             .gt7-sheet-row {
-                grid-template-columns: 1fr 1fr;
+                grid-template-columns: minmax(48px, 0.45fr) 1fr 1fr;
             }
             .gt7-sheet-label {
                 grid-column: 1 / -1;
+            }
+            .gt7-sheet-row.single .gt7-sheet-front {
+                grid-column: 2 / 4;
             }
             .gt7-sheet-value {
                 text-align: left;
@@ -3863,6 +3889,25 @@ Zagato | IsoRivolta Zagato Vision Gran Turismo
             }
         };
 
+        const officialAeroLimitsTable = {};
+
+        function createGt7AeroLimitsEntry(limits) {
+            return {
+                maxFront: limits?.maxFront ?? null,
+                maxRear: limits?.maxRear ?? null,
+                sourceLabel: limits?.sourceLabel || 'GT7 in-game aerodynamic downforce slider limits'
+            };
+        }
+
+        const gt7VerifiedAeroLimitsTable = {
+            "Porsche|Porsche 962 C '88 (Gr.1)": createGt7AeroLimitsEntry({
+                maxRear: 1000,
+                sourceLabel: 'GT7 in-game aero slider max rear downforce verified (rear max: 1000)'
+            })
+        };
+
+        const manualVerifiedAeroLimitsTable = {};
+
         const tuneCategoryDefinitions = {
             fastLap: {
                 label: 'Fast Lap',
@@ -3995,6 +4040,1409 @@ Zagato | IsoRivolta Zagato Vision Gran Turismo
             };
         }
 
+        function deriveAeroLimitFallback(category, specs) {
+            const isRaceCar = category.startsWith('Gr.') || category === 'Gr.X' || category === 'Super Formula';
+            if (isRaceCar) {
+                if (category === 'Gr.1') return { maxFront: 920, maxRear: 1100 };
+                if (category === 'Gr.2') return { maxFront: 700, maxRear: 860 };
+                if (category === 'Gr.3') return { maxFront: 470, maxRear: 620 };
+                if (category === 'Gr.4') return { maxFront: 250, maxRear: 360 };
+                if (category === 'Gr.B') return { maxFront: 210, maxRear: 310 };
+                return { maxFront: 760, maxRear: 980 };
+            }
+
+            const powerNum = specs?.powerNum ?? 0;
+            return {
+                maxFront: powerNum > 700 ? 175 : powerNum > 550 ? 130 : powerNum > 400 ? 95 : powerNum > 250 ? 60 : 34,
+                maxRear: powerNum > 700 ? 260 : powerNum > 550 ? 210 : powerNum > 400 ? 165 : powerNum > 250 ? 110 : 72
+            };
+        }
+
+        function buildAeroLimitsDatabaseEntry(make, name, category, specs) {
+            const key = `${make}|${name}`;
+            const lookupKeys = buildGearboxLookupKeys(make, name);
+            const fallback = deriveAeroLimitFallback(category, specs);
+            const officialEntry = lookupKeys.map(lookupKey => officialAeroLimitsTable[lookupKey]).find(Boolean) || null;
+            const gt7Entry = lookupKeys.map(lookupKey => gt7VerifiedAeroLimitsTable[lookupKey]).find(Boolean) || null;
+            const manualEntry = lookupKeys.map(lookupKey => manualVerifiedAeroLimitsTable[lookupKey]).find(Boolean) || null;
+            const resolvedEntry = officialEntry || gt7Entry || manualEntry || null;
+            const maxFront = resolvedEntry?.maxFront ?? fallback.maxFront;
+            const maxRear = resolvedEntry?.maxRear ?? fallback.maxRear;
+            const isCompleteEntry = resolvedEntry && resolvedEntry.maxFront != null && resolvedEntry.maxRear != null;
+            const verificationStatus = officialEntry
+                ? 'Official Verified'
+                : gt7Entry
+                    ? (isCompleteEntry ? 'GT7 Verified' : 'GT7 Verified (Partial)')
+                : manualEntry
+                    ? (isCompleteEntry ? 'Manual Verified' : 'Manual Verified (Partial)')
+                    : 'Calculated';
+            const sourceLabel = officialEntry
+                ? (officialEntry.sourceLabel || 'Official GT7 verified aero limits entry')
+                : gt7Entry
+                    ? gt7Entry.sourceLabel
+                : manualEntry
+                    ? manualEntry.sourceLabel
+                    : 'Calculated until a GT7 verified aero limits entry is added';
+
+            return {
+                key,
+                verificationStatus,
+                sourceLabel,
+                maxFront,
+                maxRear
+            };
+        }
+
+        function applyAeroLimitsToTune(car, tune) {
+            if (!tune?.aero || !car) {
+                return tune;
+            }
+
+            const aeroLimitsDatabase = car.aeroLimitsDatabase || buildAeroLimitsDatabaseEntry(
+                car.make,
+                car.name,
+                car.category,
+                { powerNum: car.powerNum, weightNum: car.weightNum, drive: car.drive }
+            );
+            const maxFront = aeroLimitsDatabase?.maxFront;
+            const maxRear = aeroLimitsDatabase?.maxRear;
+            const nextFront = typeof maxFront === 'number' ? Math.min(tune.aero.front, maxFront) : tune.aero.front;
+            const nextRear = typeof maxRear === 'number' ? Math.min(tune.aero.rear, maxRear) : tune.aero.rear;
+
+            if (nextFront === tune.aero.front && nextRear === tune.aero.rear) {
+                return tune;
+            }
+
+            return {
+                ...tune,
+                aero: {
+                    ...tune.aero,
+                    front: nextFront,
+                    rear: nextRear
+                }
+            };
+        }
+
+        function createVerifiedTuneOverride(sourceLabel, override) {
+            return {
+                verificationStatus: 'Verified Tune',
+                sourceLabel,
+                ...override
+            };
+        }
+
+        function createSf23TrackOverride(sourceLabel, trackMatcher, setup) {
+            return createVerifiedTuneOverride(sourceLabel, {
+                carKeys: [
+                    "Super Formula|Dallara SF23 Super Formula / Honda '23",
+                    "Super Formula|Dallara SF23 Super Formula / Toyota '23"
+                ],
+                trackMatcher,
+                tireCompound: setup.tireCompound,
+                suspension: {
+                    frontRideHeight: setup.rideHeight.front,
+                    rearRideHeight: setup.rideHeight.rear,
+                    frontCamber: -Math.abs(setup.camber.front),
+                    rearCamber: -Math.abs(setup.camber.rear),
+                    frontToe: setup.toe.front,
+                    rearToe: setup.toe.rear
+                },
+                antiRollBars: {
+                    front: setup.antiRollBars.front,
+                    rear: setup.antiRollBars.rear
+                },
+                dampers: {
+                    frontCompression: setup.dampers.frontCompression,
+                    rearCompression: setup.dampers.rearCompression,
+                    frontRebound: setup.dampers.frontRebound,
+                    rearRebound: setup.dampers.rearRebound
+                },
+                naturalFrequency: {
+                    front: setup.naturalFrequency.front,
+                    rear: setup.naturalFrequency.rear,
+                    valuation: `Verified SF23 setup | ${setup.profileLabel}`
+                },
+                lsd: {
+                    initialTorque: setup.lsd.initialTorque,
+                    accelerationSensitivity: setup.lsd.accelerationSensitivity,
+                    brakingSensitivity: setup.lsd.brakingSensitivity
+                },
+                aero: {
+                    front: setup.aero.front,
+                    rear: setup.aero.rear,
+                    profile: setup.profileLabel
+                },
+                brakes: {
+                    frontBias: setup.brakes.frontBias,
+                    brakeForce: setup.brakes.brakeForce
+                },
+                gearRatios: {
+                    topSpeedKph: setup.topSpeedKph
+                }
+            });
+        }
+
+        function createTrackTuneOverride(carKeys, sourceLabel, trackMatcher, setup) {
+            return createVerifiedTuneOverride(sourceLabel, {
+                carKeys,
+                trackMatcher,
+                tireCompound: setup.tireCompound,
+                suspension: {
+                    frontRideHeight: setup.rideHeight.front,
+                    rearRideHeight: setup.rideHeight.rear,
+                    frontCamber: -Math.abs(setup.camber.front),
+                    rearCamber: -Math.abs(setup.camber.rear),
+                    frontToe: setup.toe.front,
+                    rearToe: setup.toe.rear
+                },
+                antiRollBars: setup.antiRollBars ? {
+                    front: setup.antiRollBars.front,
+                    rear: setup.antiRollBars.rear
+                } : undefined,
+                dampers: setup.dampers ? {
+                    frontCompression: setup.dampers.frontCompression,
+                    rearCompression: setup.dampers.rearCompression,
+                    frontRebound: setup.dampers.frontRebound,
+                    rearRebound: setup.dampers.rearRebound
+                } : undefined,
+                naturalFrequency: setup.naturalFrequency ? {
+                    front: setup.naturalFrequency.front,
+                    rear: setup.naturalFrequency.rear,
+                    valuation: `Verified setup | ${setup.profileLabel}`
+                } : undefined,
+                lsd: setup.lsd ? {
+                    initialTorque: setup.lsd.initialTorque,
+                    accelerationSensitivity: setup.lsd.accelerationSensitivity,
+                    brakingSensitivity: setup.lsd.brakingSensitivity
+                } : undefined,
+                differential: setup.differential ? {
+                    type: setup.differential.type,
+                    front: setup.differential.front ? { ...setup.differential.front } : undefined,
+                    rear: setup.differential.rear ? { ...setup.differential.rear } : undefined,
+                    centreDifferential: setup.differential.centreDifferential,
+                    torqueSplit: setup.differential.torqueSplit
+                } : undefined,
+                brakes: setup.brakes ? {
+                    frontBias: setup.brakes.frontBias,
+                    brakeForce: setup.brakes.brakeForce
+                } : undefined,
+                aero: setup.aero ? {
+                    front: setup.aero.front,
+                    rear: setup.aero.rear,
+                    profile: setup.profileLabel
+                } : undefined,
+                gearRatios: setup.gearRatios ? {
+                    ...setup.gearRatios,
+                    manualAdjustment: setup.gearRatios.manualAdjustment || `Verified setup | ${setup.profileLabel}`
+                } : undefined
+            });
+        }
+
+        const verifiedBaseTuneTable = {
+            "Honda|Honda Civic Type R (FL5) '22": createVerifiedTuneOverride(
+                'ShiftPoint Guide Civic Type R baseline tune',
+                {
+                    tireCompound: 'Racing: Medium',
+                    tuneMetaLabel: 'Verified FL5 baseline'
+                }
+            ),
+            "Mazda|Mazda RX-7 Spirit R Type A (FD) '02": createVerifiedTuneOverride(
+                'ShiftPoint Guide RX-7 baseline tune',
+                {
+                    tireCompound: 'Racing: Medium',
+                    tuneMetaLabel: 'Verified RX-7 baseline'
+                }
+            ),
+            "Toyota|Toyota GR86 RZ '21": createVerifiedTuneOverride(
+                'ShiftPoint Guide Toyota GR86 baseline tune',
+                {
+                    tireCompound: 'Racing: Medium',
+                    tuneMetaLabel: 'Verified GR86 baseline'
+                }
+            ),
+            "Porsche|Porsche 911 GT3 (997) '09": createVerifiedTuneOverride(
+                'ShiftPoint Guide Porsche 911 GT3 (997) baseline tune',
+                {
+                    tireCompound: 'Racing: Medium',
+                    tuneMetaLabel: 'Verified 911 GT3 997 baseline'
+                }
+            ),
+            "Porsche|Porsche Cayman GT4 '16": createVerifiedTuneOverride(
+                'Storm Racing Porsche Cayman GT4 PP650 setup',
+                {
+                    tireCompound: 'Sports: Medium',
+                    suspension: {
+                        frontRideHeight: 60,
+                        rearRideHeight: 70,
+                        frontCamber: -2.5,
+                        rearCamber: -2.4,
+                        frontToe: 0.00,
+                        rearToe: 0.15
+                    },
+                    antiRollBars: { front: 10, rear: 10 },
+                    dampers: {
+                        frontCompression: 22,
+                        rearCompression: 25,
+                        frontRebound: 42,
+                        rearRebound: 45
+                    },
+                    naturalFrequency: {
+                        front: 3.05,
+                        rear: 3.15,
+                        valuation: 'Verified Porsche Cayman GT4 PP650 setup'
+                    },
+                    lsd: {
+                        initialTorque: 5,
+                        accelerationSensitivity: 5,
+                        brakingSensitivity: 5
+                    },
+                    aero: {
+                        front: 196,
+                        rear: 360,
+                        profile: 'Verified Porsche Cayman GT4 PP650 aero'
+                    },
+                    brakes: {
+                        frontBias: 50
+                    },
+                    gearRatios: {
+                        topSpeedKph: 320,
+                        manualAdjustment: 'Verified Cayman GT4 PP650 gearbox target'
+                    }
+                }
+            ),
+            "Super Formula|Dallara SF23 Super Formula / Honda '23": createVerifiedTuneOverride(
+                'Storm Racing GT7 SF23 WTC800 setup',
+                {
+                    tireCompound: 'Racing: Hard',
+                    suspension: {
+                        frontRideHeight: 26,
+                        rearRideHeight: 53,
+                        frontCamber: -3.2,
+                        rearCamber: -3.0,
+                        frontToe: -0.10,
+                        rearToe: 0.20
+                    },
+                    antiRollBars: { front: 10, rear: 10 },
+                    dampers: {
+                        frontCompression: 22,
+                        rearCompression: 22,
+                        frontRebound: 40,
+                        rearRebound: 40
+                    },
+                    naturalFrequency: {
+                        front: 5.30,
+                        rear: 5.40,
+                        valuation: 'Verified SF23 setup | WTC800 baseline'
+                    },
+                    lsd: {
+                        initialTorque: 10,
+                        accelerationSensitivity: 10,
+                        brakingSensitivity: 20
+                    },
+                    aero: {
+                        front: 1240,
+                        rear: 1760,
+                        profile: 'Verified SF23 setup | WTC800 baseline'
+                    },
+                    brakes: {
+                        frontBias: 50,
+                        brakeForce: 10
+                    },
+                    gearRatios: {
+                        topSpeedKph: 320
+                    }
+                }
+            ),
+            "Super Formula|Dallara SF23 Super Formula / Toyota '23": createVerifiedTuneOverride(
+                'Storm Racing GT7 SF23 WTC800 setup',
+                {
+                    tireCompound: 'Racing: Hard',
+                    suspension: {
+                        frontRideHeight: 26,
+                        rearRideHeight: 53,
+                        frontCamber: -3.2,
+                        rearCamber: -3.0,
+                        frontToe: -0.10,
+                        rearToe: 0.20
+                    },
+                    antiRollBars: { front: 10, rear: 10 },
+                    dampers: {
+                        frontCompression: 22,
+                        rearCompression: 22,
+                        frontRebound: 40,
+                        rearRebound: 40
+                    },
+                    naturalFrequency: {
+                        front: 5.30,
+                        rear: 5.40,
+                        valuation: 'Verified SF23 setup | WTC800 baseline'
+                    },
+                    lsd: {
+                        initialTorque: 10,
+                        accelerationSensitivity: 10,
+                        brakingSensitivity: 20
+                    },
+                    aero: {
+                        front: 1240,
+                        rear: 1760,
+                        profile: 'Verified SF23 setup | WTC800 baseline'
+                    },
+                    brakes: {
+                        frontBias: 50,
+                        brakeForce: 10
+                    },
+                    gearRatios: {
+                        topSpeedKph: 320
+                    }
+                }
+            )
+        };
+
+        const verifiedTrackTuneTable = [
+            createSf23TrackOverride(
+                'Storm Racing GT7 SF23 Nordschleife time-attack setup',
+                (track) => track.familyKey === 'nurburgring' && String(track.layout || '').includes('Nordschleife'),
+                {
+                    tireCompound: 'Racing: Soft',
+                    rideHeight: { front: 26, rear: 55 },
+                    antiRollBars: { front: 9, rear: 10 },
+                    dampers: {
+                        frontCompression: 25,
+                        rearCompression: 24,
+                        frontRebound: 45,
+                        rearRebound: 45
+                    },
+                    naturalFrequency: { front: 5.60, rear: 5.70 },
+                    camber: { front: 2.5, rear: 2.4 },
+                    toe: { front: -0.10, rear: 0.20 },
+                    lsd: {
+                        initialTorque: 5,
+                        accelerationSensitivity: 5,
+                        brakingSensitivity: 5
+                    },
+                    aero: { front: 1270, rear: 1730 },
+                    brakes: { frontBias: 49, brakeForce: 10 },
+                    topSpeedKph: 360,
+                    profileLabel: 'Verified SF23 Nordschleife time-attack setup'
+                }
+            ),
+            createSf23TrackOverride(
+                'Storm Racing GT7 SF23 Gilles-Villeneuve setup',
+                (track) => track.familyKey === 'gilles-villeneuve',
+                {
+                    tireCompound: 'Racing: Hard',
+                    rideHeight: { front: 27, rear: 56 },
+                    antiRollBars: { front: 10, rear: 9 },
+                    dampers: {
+                        frontCompression: 24,
+                        rearCompression: 25,
+                        frontRebound: 44,
+                        rearRebound: 45
+                    },
+                    naturalFrequency: { front: 4.70, rear: 4.90 },
+                    camber: { front: 2.2, rear: 2.2 },
+                    toe: { front: -0.10, rear: 0.22 },
+                    lsd: {
+                        initialTorque: 5,
+                        accelerationSensitivity: 5,
+                        brakingSensitivity: 5
+                    },
+                    aero: { front: 1220, rear: 1630 },
+                    brakes: { frontBias: 50, brakeForce: 10 },
+                    topSpeedKph: 350,
+                    profileLabel: 'Verified SF23 Gilles-Villeneuve setup'
+                }
+            ),
+            createTrackTuneOverride(
+                ["Honda|Honda Civic Type R (FL5) '22"],
+                'ShiftPoint Guide Honda Civic Type R Autopolis setup',
+                (track) => track.familyKey === 'autopolis' && String(track.layout || '').includes('Full Course'),
+                {
+                    tireCompound: 'Racing: Medium',
+                    rideHeight: { front: 63, rear: 60 },
+                    antiRollBars: { front: 3, rear: 6 },
+                    dampers: {
+                        frontCompression: 4,
+                        rearCompression: 5,
+                        frontRebound: 5,
+                        rearRebound: 6
+                    },
+                    naturalFrequency: { front: 6.80, rear: 7.50 },
+                    camber: { front: 2.8, rear: 1.0 },
+                    toe: { front: -0.05, rear: 0.00 },
+                    lsd: {
+                        initialTorque: 8,
+                        accelerationSensitivity: 55,
+                        brakingSensitivity: 30
+                    },
+                    brakes: {
+                        frontBias: 60
+                    },
+                    aero: { front: 180, rear: 210 },
+                    gearRatios: {
+                        finalDrive: 4.10,
+                        gears: [3.45, 2.22, 1.63, 1.27, 1.02, 0.84],
+                        maxGear: 6
+                    },
+                    profileLabel: 'Verified Civic Type R Autopolis setup'
+                }
+            ),
+            createTrackTuneOverride(
+                ["Honda|Honda Civic Type R (FL5) '22"],
+                'ShiftPoint Guide Honda Civic Type R Brands Hatch Indy setup',
+                (track) => track.familyKey === 'brands-hatch' && String(track.layout || '').includes('Indy'),
+                {
+                    tireCompound: 'Racing: Soft',
+                    rideHeight: { front: 62, rear: 59 },
+                    antiRollBars: { front: 2, rear: 6 },
+                    dampers: {
+                        frontCompression: 4,
+                        rearCompression: 5,
+                        frontRebound: 5,
+                        rearRebound: 6
+                    },
+                    naturalFrequency: { front: 6.50, rear: 7.20 },
+                    camber: { front: 3.0, rear: 1.0 },
+                    toe: { front: -0.08, rear: 0.00 },
+                    lsd: {
+                        initialTorque: 8,
+                        accelerationSensitivity: 60,
+                        brakingSensitivity: 35
+                    },
+                    brakes: {
+                        frontBias: 61
+                    },
+                    aero: { front: 160, rear: 190 },
+                    gearRatios: {
+                        finalDrive: 4.20,
+                        gears: [3.45, 2.22, 1.63, 1.27, 1.02, 0.84],
+                        maxGear: 6
+                    },
+                    profileLabel: 'Verified Civic Type R Brands Hatch Indy setup'
+                }
+            ),
+            createTrackTuneOverride(
+                ["Honda|Honda Civic Type R (FL5) '22"],
+                'ShiftPoint Guide Honda Civic Type R Laguna Seca setup',
+                (track) => track.familyKey === 'laguna-seca',
+                {
+                    tireCompound: 'Racing: Medium',
+                    rideHeight: { front: 64, rear: 61 },
+                    antiRollBars: { front: 3, rear: 5 },
+                    dampers: {
+                        frontCompression: 5,
+                        rearCompression: 6,
+                        frontRebound: 5,
+                        rearRebound: 6
+                    },
+                    naturalFrequency: { front: 6.80, rear: 7.50 },
+                    camber: { front: 2.5, rear: 1.0 },
+                    toe: { front: -0.05, rear: 0.00 },
+                    lsd: {
+                        initialTorque: 8,
+                        accelerationSensitivity: 52,
+                        brakingSensitivity: 28
+                    },
+                    brakes: {
+                        frontBias: 60
+                    },
+                    aero: { front: 170, rear: 200 },
+                    gearRatios: {
+                        finalDrive: 4.05,
+                        gears: [3.45, 2.22, 1.63, 1.27, 1.02, 0.84],
+                        maxGear: 6
+                    },
+                    profileLabel: 'Verified Civic Type R Laguna Seca setup'
+                }
+            ),
+            createTrackTuneOverride(
+                ["Mazda|Mazda RX-7 Spirit R Type A (FD) '02"],
+                'ShiftPoint Guide Mazda RX-7 Laguna Seca setup',
+                (track) => track.familyKey === 'laguna-seca',
+                {
+                    tireCompound: 'Racing: Soft',
+                    rideHeight: { front: 62, rear: 67 },
+                    antiRollBars: { front: 4, rear: 3 },
+                    dampers: {
+                        frontCompression: 4,
+                        rearCompression: 5,
+                        frontRebound: 4,
+                        rearRebound: 4
+                    },
+                    naturalFrequency: { front: 6.80, rear: 7.50 },
+                    camber: { front: 2.2, rear: 1.2 },
+                    toe: { front: 0.00, rear: 0.10 },
+                    lsd: {
+                        initialTorque: 10,
+                        accelerationSensitivity: 40,
+                        brakingSensitivity: 25
+                    },
+                    brakes: {
+                        frontBias: 57
+                    },
+                    profileLabel: 'Verified RX-7 Laguna Seca setup'
+                }
+            ),
+            createTrackTuneOverride(
+                ["Mazda|Mazda RX-7 Spirit R Type A (FD) '02"],
+                'ShiftPoint Guide Mazda RX-7 Fuji setup',
+                (track) => track.familyKey === 'fuji' && String(track.layout || '').includes('Full Course'),
+                {
+                    tireCompound: 'Racing: Medium',
+                    rideHeight: { front: 60, rear: 65 },
+                    antiRollBars: { front: 4, rear: 4 },
+                    dampers: {
+                        frontCompression: 4,
+                        rearCompression: 5,
+                        frontRebound: 5,
+                        rearRebound: 5
+                    },
+                    naturalFrequency: { front: 7.20, rear: 8.00 },
+                    camber: { front: 2.0, rear: 1.0 },
+                    toe: { front: 0.00, rear: 0.08 },
+                    lsd: {
+                        initialTorque: 12,
+                        accelerationSensitivity: 50,
+                        brakingSensitivity: 20
+                    },
+                    brakes: {
+                        frontBias: 56
+                    },
+                    profileLabel: 'Verified RX-7 Fuji setup'
+                }
+            ),
+            createTrackTuneOverride(
+                ["Mazda|Mazda RX-7 Spirit R Type A (FD) '02"],
+                'ShiftPoint Guide Mazda RX-7 Brands Hatch GP setup',
+                (track) => track.familyKey === 'brands-hatch' && String(track.layout || '').includes('Grand Prix'),
+                {
+                    tireCompound: 'Racing: Medium',
+                    rideHeight: { front: 63, rear: 68 },
+                    antiRollBars: { front: 4, rear: 3 },
+                    dampers: {
+                        frontCompression: 4,
+                        rearCompression: 5,
+                        frontRebound: 4,
+                        rearRebound: 5
+                    },
+                    naturalFrequency: { front: 7.00, rear: 7.80 },
+                    camber: { front: 2.1, rear: 1.1 },
+                    toe: { front: 0.00, rear: 0.09 },
+                    lsd: {
+                        initialTorque: 10,
+                        accelerationSensitivity: 42,
+                        brakingSensitivity: 28
+                    },
+                    brakes: {
+                        frontBias: 57
+                    },
+                    profileLabel: 'Verified RX-7 Brands Hatch GP setup'
+                }
+            ),
+            createTrackTuneOverride(
+                ["Toyota|Toyota GR86 RZ '21"],
+                'ShiftPoint Guide Toyota GR86 Nurburgring setup',
+                (track) => track.familyKey === 'nurburgring' && String(track.layout || '').includes('Nordschleife'),
+                {
+                    tireCompound: 'Racing: Medium',
+                    rideHeight: { front: 65, rear: 70 },
+                    antiRollBars: { front: 4, rear: 3 },
+                    dampers: {
+                        frontCompression: 4,
+                        rearCompression: 5,
+                        frontRebound: 4,
+                        rearRebound: 5
+                    },
+                    naturalFrequency: { front: 6.50, rear: 7.20 },
+                    camber: { front: 2.0, rear: 1.0 },
+                    toe: { front: 0.00, rear: 0.08 },
+                    lsd: {
+                        initialTorque: 10,
+                        accelerationSensitivity: 45,
+                        brakingSensitivity: 20
+                    },
+                    brakes: {
+                        frontBias: 57
+                    },
+                    gearRatios: {
+                        finalDrive: 4.10,
+                        gears: [3.44, 2.17, 1.58, 1.22, 0.99, 0.82],
+                        maxGear: 6
+                    },
+                    profileLabel: 'Verified GR86 Nurburgring setup'
+                }
+            ),
+            createTrackTuneOverride(
+                ["Toyota|Toyota GR86 RZ '21"],
+                'ShiftPoint Guide Toyota GR86 Suzuka setup',
+                (track) => track.familyKey === 'suzuka',
+                {
+                    tireCompound: 'Racing: Soft',
+                    rideHeight: { front: 62, rear: 67 },
+                    antiRollBars: { front: 5, rear: 3 },
+                    dampers: {
+                        frontCompression: 4,
+                        rearCompression: 4,
+                        frontRebound: 4,
+                        rearRebound: 4
+                    },
+                    naturalFrequency: { front: 7.00, rear: 7.50 },
+                    camber: { front: 2.2, rear: 1.2 },
+                    toe: { front: 0.00, rear: 0.06 },
+                    lsd: {
+                        initialTorque: 10,
+                        accelerationSensitivity: 50,
+                        brakingSensitivity: 15
+                    },
+                    brakes: {
+                        frontBias: 56
+                    },
+                    profileLabel: 'Verified GR86 Suzuka setup'
+                }
+            ),
+            createTrackTuneOverride(
+                ["Toyota|Toyota GR86 RZ '21"],
+                'ShiftPoint Guide Toyota GR86 Laguna Seca setup',
+                (track) => track.familyKey === 'laguna-seca',
+                {
+                    tireCompound: 'Racing: Medium',
+                    rideHeight: { front: 63, rear: 68 },
+                    antiRollBars: { front: 4, rear: 3 },
+                    dampers: {
+                        frontCompression: 4,
+                        rearCompression: 5,
+                        frontRebound: 5,
+                        rearRebound: 4
+                    },
+                    naturalFrequency: { front: 6.80, rear: 7.00 },
+                    camber: { front: 2.0, rear: 1.0 },
+                    toe: { front: 0.00, rear: 0.10 },
+                    lsd: {
+                        initialTorque: 10,
+                        accelerationSensitivity: 40,
+                        brakingSensitivity: 25
+                    },
+                    brakes: {
+                        frontBias: 58
+                    },
+                    profileLabel: 'Verified GR86 Laguna Seca setup'
+                }
+            ),
+            createTrackTuneOverride(
+                ["Nissan|Nissan GT-R NISMO '17"],
+                'ShiftPoint Guide Nissan GT-R NISMO Fuji setup',
+                (track) => track.familyKey === 'fuji' && String(track.layout || '').includes('Full Course'),
+                {
+                    tireCompound: 'Racing: Medium',
+                    rideHeight: { front: 65, rear: 68 },
+                    antiRollBars: { front: 4, rear: 4 },
+                    dampers: {
+                        frontCompression: 5,
+                        rearCompression: 5,
+                        frontRebound: 6,
+                        rearRebound: 6
+                    },
+                    naturalFrequency: { front: 8.00, rear: 8.50 },
+                    camber: { front: 2.5, rear: 1.5 },
+                    toe: { front: 0.00, rear: 0.10 },
+                    brakes: {
+                        frontBias: 56
+                    },
+                    differential: {
+                        type: 'Fully Customisable',
+                        front: {
+                            initialTorque: 10,
+                            accelerationSensitivity: 30,
+                            brakingSensitivity: 15
+                        },
+                        rear: {
+                            initialTorque: 12,
+                            accelerationSensitivity: 45,
+                            brakingSensitivity: 20
+                        }
+                    },
+                    aero: { front: 220, rear: 300 },
+                    gearRatios: {
+                        finalDrive: 3.45,
+                        gears: [3.80, 2.52, 1.82, 1.38, 1.09, 0.87],
+                        maxGear: 6
+                    },
+                    profileLabel: 'Verified GT-R NISMO Fuji setup'
+                }
+            ),
+            createTrackTuneOverride(
+                ["Nissan|Nissan GT-R NISMO '17"],
+                'ShiftPoint Guide Nissan GT-R NISMO Nurburgring setup',
+                (track) => track.familyKey === 'nurburgring' && String(track.layout || '').includes('Nordschleife'),
+                {
+                    tireCompound: 'Racing: Medium',
+                    rideHeight: { front: 67, rear: 70 },
+                    antiRollBars: { front: 3, rear: 4 },
+                    dampers: {
+                        frontCompression: 4,
+                        rearCompression: 5,
+                        frontRebound: 5,
+                        rearRebound: 6
+                    },
+                    naturalFrequency: { front: 7.50, rear: 8.00 },
+                    camber: { front: 2.5, rear: 1.5 },
+                    toe: { front: 0.00, rear: 0.12 },
+                    brakes: {
+                        frontBias: 55
+                    },
+                    differential: {
+                        type: 'Fully Customisable',
+                        front: {
+                            initialTorque: 8,
+                            accelerationSensitivity: 25,
+                            brakingSensitivity: 12
+                        },
+                        rear: {
+                            initialTorque: 12,
+                            accelerationSensitivity: 40,
+                            brakingSensitivity: 18
+                        }
+                    },
+                    aero: { front: 250, rear: 350 },
+                    gearRatios: {
+                        finalDrive: 3.55,
+                        gears: [3.80, 2.52, 1.82, 1.38, 1.09, 0.87],
+                        maxGear: 6
+                    },
+                    profileLabel: 'Verified GT-R NISMO Nurburgring setup'
+                }
+            ),
+            createTrackTuneOverride(
+                ["Nissan|Nissan GT-R NISMO '17"],
+                'ShiftPoint Guide Nissan GT-R NISMO Sardegna C setup',
+                (track) => track.familyKey === 'sardegna-road' && String(track.layout || '').trim() === 'C',
+                {
+                    tireCompound: 'Racing: Hard',
+                    rideHeight: { front: 64, rear: 67 },
+                    antiRollBars: { front: 4, rear: 5 },
+                    dampers: {
+                        frontCompression: 5,
+                        rearCompression: 5,
+                        frontRebound: 6,
+                        rearRebound: 6
+                    },
+                    naturalFrequency: { front: 8.20, rear: 8.80 },
+                    camber: { front: 2.0, rear: 1.5 },
+                    toe: { front: 0.00, rear: 0.10 },
+                    brakes: {
+                        frontBias: 57
+                    },
+                    differential: {
+                        type: 'Fully Customisable',
+                        front: {
+                            initialTorque: 10,
+                            accelerationSensitivity: 30,
+                            brakingSensitivity: 15
+                        },
+                        rear: {
+                            initialTorque: 14,
+                            accelerationSensitivity: 50,
+                            brakingSensitivity: 22
+                        }
+                    },
+                    aero: { front: 200, rear: 280 },
+                    gearRatios: {
+                        finalDrive: 3.35,
+                        gears: [3.80, 2.52, 1.82, 1.38, 1.09, 0.87],
+                        maxGear: 6
+                    },
+                    profileLabel: 'Verified GT-R NISMO Sardegna C setup'
+                }
+            ),
+            createTrackTuneOverride(
+                ["Porsche|Porsche 911 GT3 (997) '09"],
+                'ShiftPoint Guide Porsche 911 GT3 (997) Nurburgring setup',
+                (track) => track.familyKey === 'nurburgring' && String(track.layout || '').includes('Nordschleife'),
+                {
+                    tireCompound: 'Racing: Medium',
+                    rideHeight: { front: 62, rear: 68 },
+                    antiRollBars: { front: 3, rear: 5 },
+                    dampers: {
+                        frontCompression: 4,
+                        rearCompression: 6,
+                        frontRebound: 5,
+                        rearRebound: 7
+                    },
+                    naturalFrequency: { front: 7.20, rear: 8.80 },
+                    camber: { front: 2.5, rear: 1.5 },
+                    toe: { front: 0.00, rear: 0.10 },
+                    lsd: {
+                        initialTorque: 12,
+                        accelerationSensitivity: 40,
+                        brakingSensitivity: 15
+                    },
+                    brakes: {
+                        frontBias: 55
+                    },
+                    aero: { front: 250, rear: 380 },
+                    gearRatios: {
+                        finalDrive: 3.50,
+                        gears: [3.80, 2.48, 1.79, 1.35, 1.05, 0.86],
+                        maxGear: 6
+                    },
+                    profileLabel: 'Verified 911 GT3 (997) Nurburgring setup'
+                }
+            ),
+            createTrackTuneOverride(
+                ["Porsche|Porsche 911 GT3 (997) '09"],
+                'ShiftPoint Guide Porsche 911 GT3 (997) Monza setup',
+                (track) => track.familyKey === 'monza',
+                {
+                    tireCompound: 'Racing: Hard',
+                    rideHeight: { front: 60, rear: 65 },
+                    antiRollBars: { front: 3, rear: 4 },
+                    dampers: {
+                        frontCompression: 4,
+                        rearCompression: 5,
+                        frontRebound: 5,
+                        rearRebound: 6
+                    },
+                    naturalFrequency: { front: 7.00, rear: 8.50 },
+                    camber: { front: 2.0, rear: 1.0 },
+                    toe: { front: 0.00, rear: 0.08 },
+                    lsd: {
+                        initialTorque: 10,
+                        accelerationSensitivity: 35,
+                        brakingSensitivity: 12
+                    },
+                    brakes: {
+                        frontBias: 54
+                    },
+                    aero: { front: 150, rear: 220 },
+                    gearRatios: {
+                        finalDrive: 3.20,
+                        gears: [3.80, 2.48, 1.79, 1.35, 1.05, 0.86],
+                        maxGear: 6
+                    },
+                    profileLabel: 'Verified 911 GT3 (997) Monza setup'
+                }
+            ),
+            createTrackTuneOverride(
+                ["Porsche|Porsche 911 GT3 (997) '09"],
+                'ShiftPoint Guide Porsche 911 GT3 (997) Suzuka setup',
+                (track) => track.familyKey === 'suzuka',
+                {
+                    tireCompound: 'Racing: Soft',
+                    rideHeight: { front: 63, rear: 70 },
+                    antiRollBars: { front: 3, rear: 5 },
+                    dampers: {
+                        frontCompression: 5,
+                        rearCompression: 6,
+                        frontRebound: 5,
+                        rearRebound: 7
+                    },
+                    naturalFrequency: { front: 7.50, rear: 9.20 },
+                    camber: { front: 2.5, rear: 1.5 },
+                    toe: { front: 0.00, rear: 0.12 },
+                    lsd: {
+                        initialTorque: 14,
+                        accelerationSensitivity: 45,
+                        brakingSensitivity: 18
+                    },
+                    brakes: {
+                        frontBias: 56
+                    },
+                    aero: { front: 280, rear: 420 },
+                    gearRatios: {
+                        finalDrive: 3.65,
+                        gears: [3.80, 2.48, 1.79, 1.35, 1.05, 0.86],
+                        maxGear: 6
+                    },
+                    profileLabel: 'Verified 911 GT3 (997) Suzuka setup'
+                }
+            ),
+            createTrackTuneOverride(
+                ["Porsche|Porsche 911 RSR (991) '17 (Gr.3)"],
+                'DG-Edge Porsche 911 RSR Red Bull Ring setup',
+                (track) => track.familyKey === 'red-bull-ring',
+                {
+                    tireCompound: 'Racing: Hard',
+                    rideHeight: { front: 60, rear: 70 },
+                    antiRollBars: { front: 6, rear: 8 },
+                    dampers: {
+                        frontCompression: 20,
+                        rearCompression: 20,
+                        frontRebound: 50,
+                        rearRebound: 30
+                    },
+                    naturalFrequency: { front: 3.60, rear: 3.20 },
+                    camber: { front: 3.5, rear: 3.5 },
+                    toe: { front: -0.10, rear: 0.25 },
+                    lsd: {
+                        initialTorque: 5,
+                        accelerationSensitivity: 7,
+                        brakingSensitivity: 35
+                    },
+                    aero: { front: 400, rear: 600 },
+                    profileLabel: 'Verified Porsche 911 RSR Red Bull Ring setup'
+                }
+            ),
+            createTrackTuneOverride(
+                ["Dodge|Dodge Viper SRT GT3-R '15 (Gr.3)"],
+                'DG-Edge Dodge Viper SRT GT3-R Red Bull Ring setup',
+                (track) => track.familyKey === 'red-bull-ring',
+                {
+                    tireCompound: 'Racing: Medium',
+                    rideHeight: { front: 60, rear: 70 },
+                    antiRollBars: { front: 10, rear: 10 },
+                    dampers: {
+                        frontCompression: 20,
+                        rearCompression: 20,
+                        frontRebound: 50,
+                        rearRebound: 50
+                    },
+                    naturalFrequency: { front: 3.00, rear: 3.00 },
+                    camber: { front: 3.5, rear: 3.0 },
+                    toe: { front: -0.10, rear: 0.20 },
+                    lsd: {
+                        initialTorque: 10,
+                        accelerationSensitivity: 60,
+                        brakingSensitivity: 30
+                    },
+                    aero: { front: 400, rear: 600 },
+                    profileLabel: 'Verified Dodge Viper SRT GT3-R Red Bull Ring setup'
+                }
+            ),
+            createTrackTuneOverride(
+                ["Chevrolet|Chevrolet Corvette C7 Gr.3 (Gr.3)"],
+                'DG-Edge Chevrolet Corvette C7 Gr.3 Red Bull Ring setup',
+                (track) => track.familyKey === 'red-bull-ring',
+                {
+                    tireCompound: 'Racing: Soft',
+                    rideHeight: { front: 60, rear: 70 },
+                    antiRollBars: { front: 10, rear: 10 },
+                    dampers: {
+                        frontCompression: 20,
+                        rearCompression: 25,
+                        frontRebound: 50,
+                        rearRebound: 50
+                    },
+                    naturalFrequency: { front: 3.00, rear: 3.15 },
+                    camber: { front: 3.5, rear: 3.0 },
+                    toe: { front: -0.10, rear: 0.20 },
+                    lsd: {
+                        initialTorque: 5,
+                        accelerationSensitivity: 12,
+                        brakingSensitivity: 5
+                    },
+                    aero: { front: 400, rear: 600 },
+                    profileLabel: 'Verified Chevrolet Corvette C7 Gr.3 Red Bull Ring setup'
+                }
+            ),
+            createTrackTuneOverride(
+                ["Genesis|Genesis X GR3 (Gr.3)"],
+                'DG-Edge Genesis X GR3 Red Bull Ring setup',
+                (track) => track.familyKey === 'red-bull-ring',
+                {
+                    tireCompound: 'Racing: Soft',
+                    rideHeight: { front: 80, rear: 90 },
+                    antiRollBars: { front: 8, rear: 8 },
+                    dampers: {
+                        frontCompression: 20,
+                        rearCompression: 40,
+                        frontRebound: 50,
+                        rearRebound: 50
+                    },
+                    naturalFrequency: { front: 3.00, rear: 3.00 },
+                    camber: { front: 3.5, rear: 3.0 },
+                    toe: { front: -0.10, rear: 0.20 },
+                    lsd: {
+                        initialTorque: 5,
+                        accelerationSensitivity: 40,
+                        brakingSensitivity: 5
+                    },
+                    aero: { front: 425, rear: 575 },
+                    profileLabel: 'Verified Genesis X GR3 Red Bull Ring setup'
+                }
+            ),
+            createTrackTuneOverride(
+                ["Nissan|Nissan GT-R NISMO GT3 '18 (Gr.3)"],
+                'DG-Edge Nissan GT-R NISMO GT3 18 Red Bull Ring setup',
+                (track) => track.familyKey === 'red-bull-ring',
+                {
+                    tireCompound: 'Racing: Medium',
+                    rideHeight: { front: 60, rear: 70 },
+                    antiRollBars: { front: 10, rear: 10 },
+                    dampers: {
+                        frontCompression: 20,
+                        rearCompression: 20,
+                        frontRebound: 50,
+                        rearRebound: 44
+                    },
+                    naturalFrequency: { front: 2.50, rear: 2.95 },
+                    camber: { front: 3.5, rear: 3.5 },
+                    toe: { front: -0.10, rear: 0.20 },
+                    lsd: {
+                        initialTorque: 5,
+                        accelerationSensitivity: 52,
+                        brakingSensitivity: 5
+                    },
+                    aero: { front: 400, rear: 650 },
+                    profileLabel: 'Verified Nissan GT-R NISMO GT3 18 Red Bull Ring setup'
+                }
+            ),
+            createTrackTuneOverride(
+                ["Porsche|Porsche 911 RSR (991) '17 (Gr.3)"],
+                'DG-Edge Porsche 911 RSR Deep Forest setup',
+                (track) => track.familyKey === 'deep-forest' && !String(track.layout || '').includes('Reverse'),
+                {
+                    tireCompound: 'Racing: Hard',
+                    rideHeight: { front: 60, rear: 70 },
+                    antiRollBars: { front: 6, rear: 8 },
+                    dampers: {
+                        frontCompression: 20,
+                        rearCompression: 20,
+                        frontRebound: 50,
+                        rearRebound: 30
+                    },
+                    naturalFrequency: { front: 3.60, rear: 3.20 },
+                    camber: { front: 3.5, rear: 3.5 },
+                    toe: { front: -0.10, rear: 0.25 },
+                    lsd: {
+                        initialTorque: 5,
+                        accelerationSensitivity: 7,
+                        brakingSensitivity: 35
+                    },
+                    profileLabel: 'Verified Porsche 911 RSR Deep Forest setup'
+                }
+            ),
+            createTrackTuneOverride(
+                ["Dodge|Dodge Viper SRT GT3-R '15 (Gr.3)"],
+                'DG-Edge Dodge Viper SRT GT3-R Deep Forest Reverse setup',
+                (track) => track.familyKey === 'deep-forest' && String(track.layout || '').includes('Reverse'),
+                {
+                    tireCompound: 'Racing: Medium',
+                    rideHeight: { front: 60, rear: 70 },
+                    antiRollBars: { front: 10, rear: 10 },
+                    dampers: {
+                        frontCompression: 20,
+                        rearCompression: 20,
+                        frontRebound: 50,
+                        rearRebound: 50
+                    },
+                    naturalFrequency: { front: 3.00, rear: 3.00 },
+                    camber: { front: 3.5, rear: 3.0 },
+                    toe: { front: -0.10, rear: 0.20 },
+                    lsd: {
+                        initialTorque: 10,
+                        accelerationSensitivity: 60,
+                        brakingSensitivity: 30
+                    },
+                    profileLabel: 'Verified Dodge Viper SRT GT3-R Deep Forest Reverse setup'
+                }
+            ),
+            createTrackTuneOverride(
+                ["Audi|Audi R8 LMS Evo '19 (Gr.3)"],
+                'DG-Edge Audi R8 LMS Evo 19 Deep Forest setup',
+                (track) => track.familyKey === 'deep-forest' && !String(track.layout || '').includes('Reverse'),
+                {
+                    tireCompound: 'Racing: Medium',
+                    rideHeight: { front: 60, rear: 70 },
+                    antiRollBars: { front: 7, rear: 6 },
+                    dampers: {
+                        frontCompression: 21,
+                        rearCompression: 24,
+                        frontRebound: 49,
+                        rearRebound: 46
+                    },
+                    naturalFrequency: { front: 3.00, rear: 3.00 },
+                    camber: { front: 3.5, rear: 3.5 },
+                    toe: { front: -0.10, rear: 0.25 },
+                    lsd: {
+                        initialTorque: 5,
+                        accelerationSensitivity: 26,
+                        brakingSensitivity: 44
+                    },
+                    profileLabel: 'Verified Audi R8 LMS Evo 19 Deep Forest setup'
+                }
+            ),
+            createTrackTuneOverride(
+                ["Alfa Romeo|Alfa Romeo 4C Gr.3 (Gr.3)"],
+                'DG-Edge Alfa Romeo 4C Gr.3 Deep Forest Reverse setup',
+                (track) => track.familyKey === 'deep-forest' && String(track.layout || '').includes('Reverse'),
+                {
+                    tireCompound: 'Racing: Medium',
+                    rideHeight: { front: 60, rear: 70 },
+                    antiRollBars: { front: 9, rear: 6 },
+                    dampers: {
+                        frontCompression: 20,
+                        rearCompression: 20,
+                        frontRebound: 50,
+                        rearRebound: 50
+                    },
+                    naturalFrequency: { front: 3.40, rear: 3.00 },
+                    camber: { front: 3.5, rear: 3.5 },
+                    toe: { front: -0.10, rear: 0.25 },
+                    lsd: {
+                        initialTorque: 5,
+                        accelerationSensitivity: 5,
+                        brakingSensitivity: 30
+                    },
+                    profileLabel: 'Verified Alfa Romeo 4C Gr.3 Deep Forest Reverse setup'
+                }
+            ),
+            createTrackTuneOverride(
+                ["Genesis|Genesis G70 GR4 (Gr.4)"],
+                'DG-Edge Genesis G70 GR4 Brands Hatch GP setup',
+                (track) => track.familyKey === 'brands-hatch' && String(track.layout || '').includes('Grand Prix'),
+                {
+                    tireCompound: 'Racing: Soft',
+                    rideHeight: { front: 80, rear: 95 },
+                    antiRollBars: { front: 5, rear: 5 },
+                    dampers: {
+                        frontCompression: 40,
+                        rearCompression: 30,
+                        frontRebound: 50,
+                        rearRebound: 48
+                    },
+                    naturalFrequency: { front: 3.00, rear: 3.00 },
+                    camber: { front: 3.5, rear: 3.0 },
+                    toe: { front: -0.10, rear: 0.20 },
+                    differential: {
+                        type: 'Fully Customised',
+                        front: {
+                            initialTorque: 5,
+                            accelerationSensitivity: 20,
+                            brakingSensitivity: 10
+                        },
+                        rear: {
+                            initialTorque: 10,
+                            accelerationSensitivity: 30,
+                            brakingSensitivity: 20
+                        },
+                        centreDifferential: 'Normal'
+                    },
+                    profileLabel: 'Verified Genesis G70 GR4 Brands Hatch GP setup'
+                }
+            ),
+            createTrackTuneOverride(
+                ["Lamborghini|Lamborghini Huracán Gr.4 (Gr.4)"],
+                'DG-Edge Lamborghini Huracan Gr.4 Deep Forest Reverse setup',
+                (track) => track.familyKey === 'deep-forest' && String(track.layout || '').includes('Reverse'),
+                {
+                    tireCompound: 'Racing: Medium',
+                    rideHeight: { front: 80, rear: 90 },
+                    antiRollBars: { front: 3, rear: 6 },
+                    dampers: {
+                        frontCompression: 20,
+                        rearCompression: 40,
+                        frontRebound: 50,
+                        rearRebound: 46
+                    },
+                    naturalFrequency: { front: 3.60, rear: 3.20 },
+                    camber: { front: 3.5, rear: 3.0 },
+                    toe: { front: -0.10, rear: 0.20 },
+                    differential: {
+                        type: 'Fully Customised',
+                        front: {
+                            initialTorque: 5,
+                            accelerationSensitivity: 46,
+                            brakingSensitivity: 7
+                        },
+                        rear: {
+                            initialTorque: 10,
+                            accelerationSensitivity: 56,
+                            brakingSensitivity: 17
+                        },
+                        centreDifferential: 'Normal',
+                        torqueSplit: '30 : 70'
+                    },
+                    profileLabel: 'Verified Lamborghini Huracan Gr.4 Deep Forest Reverse setup'
+                }
+            ),
+            createTrackTuneOverride(
+                ["Chevrolet|Chevrolet Corvette C7 Gr.3 (Gr.3)"],
+                'DG-Edge Chevrolet Corvette C7 Gr.3 Deep Forest Reverse setup',
+                (track) => track.familyKey === 'deep-forest' && String(track.layout || '').includes('Reverse'),
+                {
+                    tireCompound: 'Racing: Hard',
+                    rideHeight: { front: 60, rear: 70 },
+                    antiRollBars: { front: 6, rear: 8 },
+                    dampers: {
+                        frontCompression: 20,
+                        rearCompression: 25,
+                        frontRebound: 50,
+                        rearRebound: 50
+                    },
+                    naturalFrequency: { front: 3.00, rear: 3.15 },
+                    camber: { front: 3.5, rear: 3.0 },
+                    toe: { front: -0.10, rear: 0.20 },
+                    lsd: {
+                        initialTorque: 5,
+                        accelerationSensitivity: 7,
+                        brakingSensitivity: 5
+                    },
+                    profileLabel: 'Verified Chevrolet Corvette C7 Gr.3 Deep Forest Reverse setup'
+                }
+            ),
+            createTrackTuneOverride(
+                ["Genesis|Genesis G70 GR4 (Gr.4)"],
+                'DG-Edge Genesis G70 GR4 Deep Forest Reverse setup',
+                (track) => track.familyKey === 'deep-forest' && String(track.layout || '').includes('Reverse'),
+                {
+                    tireCompound: 'Racing: Medium',
+                    rideHeight: { front: 80, rear: 95 },
+                    antiRollBars: { front: 10, rear: 1 },
+                    dampers: {
+                        frontCompression: 40,
+                        rearCompression: 30,
+                        frontRebound: 50,
+                        rearRebound: 40
+                    },
+                    naturalFrequency: { front: 3.50, rear: 3.50 },
+                    camber: { front: 3.5, rear: 3.0 },
+                    toe: { front: -0.10, rear: 0.20 },
+                    differential: {
+                        type: 'Fully Customisable',
+                        front: {
+                            initialTorque: 5,
+                            accelerationSensitivity: 60,
+                            brakingSensitivity: 5
+                        },
+                        rear: {
+                            initialTorque: 5,
+                            accelerationSensitivity: 60,
+                            brakingSensitivity: 5
+                        },
+                        centreDifferential: 'Normal'
+                    },
+                    profileLabel: 'Verified Genesis G70 GR4 Deep Forest Reverse setup'
+                }
+            ),
+            createTrackTuneOverride(
+                ["Nissan|Nissan R92CP '92 (Gr.1)"],
+                'DG-Edge Nissan R92CP 92 High Speed Ring setup',
+                (track) => track.familyKey === 'high-speed-ring' && !String(track.layout || '').includes('Reverse'),
+                {
+                    tireCompound: 'Racing: Medium',
+                    rideHeight: { front: 70, rear: 85 },
+                    antiRollBars: { front: 10, rear: 10 },
+                    dampers: {
+                        frontCompression: 26,
+                        rearCompression: 27,
+                        frontRebound: 50,
+                        rearRebound: 50
+                    },
+                    naturalFrequency: { front: 3.50, rear: 3.50 },
+                    camber: { front: 3.0, rear: 1.5 },
+                    toe: { front: -0.10, rear: 0.35 },
+                    lsd: {
+                        initialTorque: 5,
+                        accelerationSensitivity: 60,
+                        brakingSensitivity: 5
+                    },
+                    aero: { front: 540, rear: 1000 },
+                    profileLabel: 'Verified Nissan R92CP 92 High Speed Ring setup'
+                }
+            ),
+            createTrackTuneOverride(
+                ["Toyota|Toyota GR Supra Racing Concept '18 (Gr.3)"],
+                'DG-Edge Toyota GR Supra Racing Concept 18 Red Bull Ring setup',
+                (track) => track.familyKey === 'red-bull-ring',
+                {
+                    tireCompound: 'Racing: Soft',
+                    rideHeight: { front: 55, rear: 65 },
+                    antiRollBars: { front: 9, rear: 9 },
+                    dampers: {
+                        frontCompression: 20,
+                        rearCompression: 38,
+                        frontRebound: 50,
+                        rearRebound: 48
+                    },
+                    naturalFrequency: { front: 3.00, rear: 3.15 },
+                    camber: { front: 3.5, rear: 3.0 },
+                    toe: { front: -0.10, rear: 0.20 },
+                    lsd: {
+                        initialTorque: 5,
+                        accelerationSensitivity: 52,
+                        brakingSensitivity: 10
+                    },
+                    profileLabel: 'Verified Toyota GR Supra Racing Concept 18 Red Bull Ring setup'
+                }
+            ),
+            createTrackTuneOverride(
+                ["Volkswagen|Volkswagen Beetle Gr.3 (Gr.3)"],
+                'DG-Edge Volkswagen Beetle Gr.3 Red Bull Ring setup',
+                (track) => track.familyKey === 'red-bull-ring',
+                {
+                    tireCompound: 'Racing: Soft',
+                    rideHeight: { front: 60, rear: 70 },
+                    antiRollBars: { front: 10, rear: 10 },
+                    dampers: {
+                        frontCompression: 20,
+                        rearCompression: 20,
+                        frontRebound: 50,
+                        rearRebound: 50
+                    },
+                    naturalFrequency: { front: 3.60, rear: 3.20 },
+                    camber: { front: 3.5, rear: 3.0 },
+                    toe: { front: -0.10, rear: 0.20 },
+                    lsd: {
+                        initialTorque: 5,
+                        accelerationSensitivity: 10,
+                        brakingSensitivity: 10
+                    },
+                    profileLabel: 'Verified Volkswagen Beetle Gr.3 Red Bull Ring setup'
+                }
+            )
+        ];
+
+        function resolveVerifiedTuneOverride(car, track) {
+            const lookupKeys = buildGearboxLookupKeys(car.make, car.name);
+            const trackSpecificEntry = verifiedTrackTuneTable.find((entry) => (
+                Array.isArray(entry.carKeys) &&
+                entry.carKeys.some((carKey) => lookupKeys.includes(carKey)) &&
+                typeof entry.trackMatcher === 'function' &&
+                entry.trackMatcher(track)
+            )) || null;
+
+            if (trackSpecificEntry) {
+                return trackSpecificEntry;
+            }
+
+            return lookupKeys.map((lookupKey) => verifiedBaseTuneTable[lookupKey]).find(Boolean) || null;
+        }
+
+        function applyVerifiedTuneOverride(tune, override) {
+            if (!override) {
+                return {
+                    ...tune,
+                    tuneMeta: {
+                        verificationStatus: 'Calculated Tune',
+                        sourceLabel: 'Built-in track and car tune calculation'
+                    }
+                };
+            }
+
+            return {
+                ...tune,
+                tuneMeta: {
+                    verificationStatus: override.verificationStatus || 'Verified Tune',
+                    sourceLabel: override.sourceLabel || 'Verified GT7 setup source'
+                },
+                tireCompound: override.tireCompound || tune.tireCompound,
+                suspension: override.suspension ? { ...tune.suspension, ...override.suspension } : tune.suspension,
+                naturalFrequency: override.naturalFrequency ? { ...tune.naturalFrequency, ...override.naturalFrequency } : tune.naturalFrequency,
+                gearRatios: override.gearRatios ? { ...tune.gearRatios, ...override.gearRatios } : tune.gearRatios,
+                brakes: override.brakes ? { ...tune.brakes, ...override.brakes } : tune.brakes,
+                lsd: override.lsd ? { ...tune.lsd, ...override.lsd } : tune.lsd,
+                differential: override.differential ? {
+                    ...(tune.differential || {}),
+                    ...override.differential,
+                    front: override.differential.front ? { ...(tune.differential?.front || {}), ...override.differential.front } : (tune.differential?.front || undefined),
+                    rear: override.differential.rear ? { ...(tune.differential?.rear || {}), ...override.differential.rear } : (tune.differential?.rear || undefined)
+                } : tune.differential,
+                antiRollBars: override.antiRollBars ? { ...tune.antiRollBars, ...override.antiRollBars } : tune.antiRollBars,
+                dampers: override.dampers ? { ...tune.dampers, ...override.dampers } : tune.dampers,
+                aero: override.aero ? { ...tune.aero, ...override.aero } : tune.aero
+            };
+        }
+
         function buildOfficialCars() {
             const seenIds = new Set();
             return officialCarCatalogRaw.split('\n').map((line, index) => {
@@ -4005,6 +5453,7 @@ Zagato | IsoRivolta Zagato Vision Gran Turismo
                 const specs = deriveCarSpecs(make, name, category);
                 const transmission = deriveTransmissionProfile(make, name, category, specs.powerNum, specs.weightNum, specs.drive);
                 const gearboxDatabase = buildGearboxDatabaseEntry(make, name, category, specs, transmission);
+                const aeroLimitsDatabase = buildAeroLimitsDatabaseEntry(make, name, category, specs);
                 const baseId = slugifyId(`${make}-${name}`);
                 let id = baseId || `car-${index}`;
                 if (seenIds.has(id)) {
@@ -4027,6 +5476,7 @@ Zagato | IsoRivolta Zagato Vision Gran Turismo
                     maxGears: gearboxDatabase.maxGears,
                     gearboxStyle: gearboxDatabase.gearboxStyle,
                     gearboxDatabase,
+                    aeroLimitsDatabase,
                     country,
                     isFree
                 };
@@ -4297,6 +5747,57 @@ Zagato | IsoRivolta Zagato Vision Gran Turismo
             };
         }
 
+        function getTrackSpecificDownforceBias(track) {
+            const familyBiasMap = {
+                'alsace': 0.12,
+                'autopolis': 0.06,
+                'barcelona': 0.07,
+                'brands-hatch': 0.13,
+                'daytona': -0.16,
+                'deep-forest': 0.08,
+                'dragon-trail': 0.09,
+                'eiger': 0.14,
+                'fuji': -0.08,
+                'high-speed-ring': -0.13,
+                'interlagos': 0.05,
+                'kyoto': 0.04,
+                'laguna-seca': 0.14,
+                'lemans': -0.18,
+                'monza': -0.17,
+                'mount-panorama': 0.01,
+                'nurburgring': -0.04,
+                'red-bull-ring': -0.08,
+                'road-atlanta': 0.05,
+                'route-x': -0.26,
+                'spa': 0.02,
+                'suzuka': 0.08,
+                'tokyo': -0.04,
+                'trial-mountain': 0.06,
+                'tsukuba': 0.18,
+                'watkins-glen': 0.02,
+                'willow-springs': -0.06,
+                'yas-marina': 0.03
+            };
+            const layoutName = String(track.layout || '').toLowerCase();
+            let bias = familyBiasMap[track.familyKey] || 0;
+
+            if (layoutName.includes('reverse')) bias += 0.01;
+            if (layoutName.includes('short')) bias += 0.03;
+            if (layoutName.includes('endurance')) bias -= 0.02;
+            if (layoutName.includes('east')) bias += 0.02;
+            if (layoutName.includes('west')) bias += 0.01;
+
+            return clampNumber(bias, -0.28, 0.22);
+        }
+
+        function getDownforceProfileLabel(track, bias) {
+            const tuneStyle = track.tuneStyle || 'balanced';
+            if (bias <= -0.14 || tuneStyle === 'oval') return 'Low-drag GT7 aero target';
+            if (bias >= 0.12 || tuneStyle === 'technical' || tuneStyle === 'city') return 'High-downforce GT7 aero target';
+            if (tuneStyle === 'endurance' || tuneStyle === 'highSpeed') return 'Balanced endurance aero target';
+            return 'Balanced GT7 aero target';
+        }
+
         function buildPerformanceGearSet(finalDrive, topSpeedKph, context) {
             const {
                 isRaceCar,
@@ -4479,9 +5980,16 @@ Zagato | IsoRivolta Zagato Vision Gran Turismo
                 0,
                 1
             );
+            const trackSpecificDownforceBias = getTrackSpecificDownforceBias(track);
+            const downforceDemand = clampNumber(
+                effectiveAeroDemand.demand + trackSpecificDownforceBias + (categoryProfile.aeroBias * 0.35),
+                0.05,
+                1
+            );
             const frontDemand = clampNumber(
-                (effectiveAeroDemand.demand * 0.84) +
+                (downforceDemand * 0.84) +
                 (carAeroPreference * 0.18) +
+                (trackSpecificDownforceBias * 0.52) +
                 (is4WD ? 0.04 : 0) -
                 (isFWD ? 0.03 : 0),
                 0,
@@ -4490,6 +5998,7 @@ Zagato | IsoRivolta Zagato Vision Gran Turismo
             const rearDemand = clampNumber(
                 frontDemand +
                 (isFWD ? 0.05 : 0.08) +
+                Math.max(trackSpecificDownforceBias, -0.04) * 0.36 +
                 (effectiveAeroDemand.avgSpeedMph < 100 ? 0.04 : 0) -
                 (isOval ? 0.05 : 0),
                 0,
@@ -4542,7 +6051,8 @@ Zagato | IsoRivolta Zagato Vision Gran Turismo
             const lsdAccel = clampNumber(Math.round(38 + (isPowerful ? 6 : 0) + (is4WD ? 3 : 0) - (isFWD ? 4 : 0) + categoryProfile.lsdAccelBias), 20, 60);
             const lsdDecel = clampNumber(Math.round(28 + (isHighSpeed ? 2 : 0) + (is4WD ? 2 : 0) + categoryProfile.lsdDecelBias), 18, 50);
 
-            return {
+            const verifiedTuneOverride = resolveVerifiedTuneOverride(car, track);
+            const calculatedTune = {
                 category: {
                     id: activeCategory,
                     label: categoryProfile.label,
@@ -4589,8 +6099,15 @@ Zagato | IsoRivolta Zagato Vision Gran Turismo
                     frontRebound: damperRebound,
                     rearRebound: damperRebound + (isFWD ? 1 : 0)
                 },
-                aero: { front: aeroFront, rear: aeroRear }
+                aero: {
+                    front: aeroFront,
+                    rear: aeroRear,
+                    profile: getDownforceProfileLabel(track, trackSpecificDownforceBias)
+                }
             };
+
+            const mergedTune = applyVerifiedTuneOverride(calculatedTune, verifiedTuneOverride);
+            return applyAeroLimitsToTune(car, mergedTune);
         }
 
         // Subscription management
@@ -4636,26 +6153,89 @@ Zagato | IsoRivolta Zagato Vision Gran Turismo
             ];
         }
 
-        function renderTunePairRow(label, front, rear, note = '') {
+        function renderTunePairRow(label, unit, front, rear, note = '') {
             return `
                 <div class="gt7-sheet-row">
-                    <div class="gt7-sheet-label">${label}</div>
+                    <div class="gt7-sheet-label"><span>${label}</span>${note ? `<small>${note}</small>` : ''}</div>
+                    <div class="gt7-sheet-unit">${unit || '--'}</div>
                     <div class="gt7-sheet-front">${front}</div>
                     <div class="gt7-sheet-rear">${rear}</div>
-                    <div class="gt7-sheet-value">${note}</div>
                 </div>
             `;
         }
 
-        function renderTuneSingleRow(label, value, note = '') {
+        function renderTuneSingleRow(label, value, note = '', unit = '--') {
             return `
                 <div class="gt7-sheet-row single">
-                    <div class="gt7-sheet-label">${label}</div>
-                    <div class="gt7-sheet-front">--</div>
-                    <div class="gt7-sheet-rear">--</div>
-                    <div class="gt7-sheet-value">${value}${note ? ` | ${note}` : ''}</div>
+                    <div class="gt7-sheet-label"><span>${label}</span>${note ? `<small>${note}</small>` : ''}</div>
+                    <div class="gt7-sheet-unit">${unit || '--'}</div>
+                    <div class="gt7-sheet-front">${value}</div>
+                    <div class="gt7-sheet-rear"></div>
                 </div>
             `;
+        }
+
+        function buildDifferentialDisplay(car, tune) {
+            const blank = '--';
+            if (tune.differential) {
+                return {
+                    type: tune.differential.type || 'Fully Customisable',
+                    front: {
+                        initialTorque: tune.differential.front?.initialTorque ?? blank,
+                        accelerationSensitivity: tune.differential.front?.accelerationSensitivity ?? blank,
+                        brakingSensitivity: tune.differential.front?.brakingSensitivity ?? blank
+                    },
+                    rear: {
+                        initialTorque: tune.differential.rear?.initialTorque ?? blank,
+                        accelerationSensitivity: tune.differential.rear?.accelerationSensitivity ?? blank,
+                        brakingSensitivity: tune.differential.rear?.brakingSensitivity ?? blank
+                    },
+                    centreDifferential: tune.differential.centreDifferential || (car.drive === '4WD' ? 'Fully Customisable' : 'None'),
+                    torqueSplit: tune.differential.torqueSplit || blank
+                };
+            }
+
+            const profile = {
+                type: 'Fully Customisable',
+                front: {
+                    initialTorque: blank,
+                    accelerationSensitivity: blank,
+                    brakingSensitivity: blank
+                },
+                rear: {
+                    initialTorque: blank,
+                    accelerationSensitivity: blank,
+                    brakingSensitivity: blank
+                },
+                centreDifferential: 'None',
+                torqueSplit: blank
+            };
+
+            if (car.drive === '4WD') {
+                profile.front.initialTorque = Math.max(5, Math.round(tune.lsd.initialTorque * 0.65));
+                profile.front.accelerationSensitivity = Math.max(12, Math.round(tune.lsd.accelerationSensitivity * 0.72));
+                profile.front.brakingSensitivity = Math.max(10, Math.round(tune.lsd.brakingSensitivity * 0.74));
+                profile.rear.initialTorque = tune.lsd.initialTorque;
+                profile.rear.accelerationSensitivity = tune.lsd.accelerationSensitivity;
+                profile.rear.brakingSensitivity = tune.lsd.brakingSensitivity;
+                profile.centreDifferential = 'Fully Customisable';
+                profile.torqueSplit = (
+                    tune.category.id === 'control' ? '45 : 55' :
+                    tune.category.id === 'stability' ? '40 : 60' :
+                    tune.category.id === 'topSpeed' ? '30 : 70' :
+                    '35 : 65'
+                );
+            } else if (car.drive === 'FWD') {
+                profile.front.initialTorque = tune.lsd.initialTorque;
+                profile.front.accelerationSensitivity = tune.lsd.accelerationSensitivity;
+                profile.front.brakingSensitivity = tune.lsd.brakingSensitivity;
+            } else {
+                profile.rear.initialTorque = tune.lsd.initialTorque;
+                profile.rear.accelerationSensitivity = tune.lsd.accelerationSensitivity;
+                profile.rear.brakingSensitivity = tune.lsd.brakingSensitivity;
+            }
+
+            return profile;
         }
 
         function renderTuneCategorySelector(car, activeCategory = 'fastLap') {
@@ -4678,10 +6258,14 @@ Zagato | IsoRivolta Zagato Vision Gran Turismo
         }
 
         function renderGt7TuneSheet(track, car, tune) {
-            const tireCompound = getSuggestedTireCompound(car, track);
+            const tireCompound = tune.tireCompound || getSuggestedTireCompound(car, track);
             const powerToWeight = (car.powerNum / car.weightNum * 1000).toFixed(1);
             const ratings = buildTuneRatings(car, tune);
             const verificationClass = tune.gearboxMeta.verificationStatus === 'Official Verified' ? 'verified' : '';
+            const differentialProfile = buildDifferentialDisplay(car, tune);
+            const tuneStatusLabel = tune.tuneMeta?.verificationStatus || 'Calculated Tune';
+            const tuneSourceLabel = tune.tuneMeta?.sourceLabel || 'Built-in track and car tune calculation';
+            const setupTitle = tuneStatusLabel === 'Calculated Tune' ? 'Calculated Tune' : 'Verified Tune';
 
             const ratingMarkup = ratings.map((rating) => `
                 <div class="gt7-rating-row">
@@ -4691,30 +6275,34 @@ Zagato | IsoRivolta Zagato Vision Gran Turismo
                 </div>
             `).join('');
 
+            const transmissionLabel = tune.gearRatios.maxGear === 1
+                ? 'Single-speed EV'
+                : `${tune.gearRatios.maxGear}-speed manual`;
             const rows = [
-                '<div class="gt7-sheet-section">Base Sheet</div>',
-                renderTuneSingleRow('Category', escapeHtml(car.category), escapeHtml(track.typeLabel || 'Road')),
-                renderTuneSingleRow('Tune Category', escapeHtml(tune.category.label), escapeHtml(tune.category.description)),
-                renderTuneSingleRow('Power', `${car.powerNum} HP`, `${powerToWeight} HP/t`),
-                renderTuneSingleRow('Weight', `${car.weightNum.toLocaleString()} kg`, escapeHtml(car.drive)),
-                renderTuneSingleRow('Gearbox Data', escapeHtml(tune.gearboxMeta.verificationStatus), escapeHtml(tune.gearboxMeta.sourceLabel)),
-                renderTunePairRow('Tires', escapeHtml(tireCompound), escapeHtml(tireCompound), escapeHtml(track.surface)),
-                renderTunePairRow('Tire Pressure', `${tune.tirePressure.frontLeft} PSI`, `${tune.tirePressure.rearLeft} PSI`, 'Hotlap'),
+                '<div class="gt7-sheet-section">Tyres</div>',
+                renderTunePairRow('Tyres', '--', escapeHtml(tireCompound), escapeHtml(tireCompound), escapeHtml(track.surface)),
+                renderTunePairRow('Tire Pressure', 'PSI', `${tune.tirePressure.frontLeft}`, `${tune.tirePressure.rearLeft}`, 'Hotlap target'),
                 '<div class="gt7-sheet-section">Suspension</div>',
-                renderTunePairRow('Spring Rate', `${formatTuneNumber(tune.suspension.frontSpring, 1)} / 10`, `${formatTuneNumber(tune.suspension.rearSpring, 1)} / 10`, 'Calculated'),
-                renderTunePairRow('Natural Frequency', `${formatTuneNumber(tune.naturalFrequency.front, 2)} Hz`, `${formatTuneNumber(tune.naturalFrequency.rear, 2)} Hz`, escapeHtml(tune.naturalFrequency.valuation)),
-                renderTunePairRow('Ride Height', `${tune.suspension.frontRideHeight} mm`, `${tune.suspension.rearRideHeight} mm`, 'Balance'),
-                renderTunePairRow('Anti-Roll Bars', `${tune.antiRollBars.front}`, `${tune.antiRollBars.rear}`, 'Chassis'),
-                renderTunePairRow('Damping (Comp.)', `${tune.dampers.frontCompression}`, `${tune.dampers.rearCompression}`, 'Shock'),
-                renderTunePairRow('Damping (Reb.)', `${tune.dampers.frontRebound}`, `${tune.dampers.rearRebound}`, 'Shock'),
-                renderTunePairRow('Camber', `${Math.abs(tune.suspension.frontCamber).toFixed(1)} deg`, `${Math.abs(tune.suspension.rearCamber).toFixed(1)} deg`, 'Grip'),
-                renderTunePairRow('Toe', `${formatTuneNumber(tune.suspension.frontToe, 2)}`, `${formatTuneNumber(tune.suspension.rearToe, 2)}`, 'Align'),
+                renderTuneSingleRow('Suspension', 'Fully Customisable', 'GT7-style ordered setup sheet'),
+                renderTunePairRow('Body Height Adjustment', 'MM', `${tune.suspension.frontRideHeight}`, `${tune.suspension.rearRideHeight}`, 'Ride height'),
+                renderTunePairRow('Anti-Roll Bar', 'LV', `${tune.antiRollBars.front}`, `${tune.antiRollBars.rear}`, 'Chassis balance'),
+                renderTunePairRow('Damping Ratio (Compression)', '%', `${tune.dampers.frontCompression}`, `${tune.dampers.rearCompression}`, 'Bump damping'),
+                renderTunePairRow('Damping Ratio (Expansion)', '%', `${tune.dampers.frontRebound}`, `${tune.dampers.rearRebound}`, 'Rebound damping'),
+                renderTunePairRow('Natural Frequency', 'HZ', `${formatTuneNumber(tune.naturalFrequency.front, 2)}`, `${formatTuneNumber(tune.naturalFrequency.rear, 2)}`, escapeHtml(tune.naturalFrequency.valuation)),
+                renderTunePairRow('Negative Camber Angle', 'DEG', `${Math.abs(tune.suspension.frontCamber).toFixed(1)}`, `${Math.abs(tune.suspension.rearCamber).toFixed(1)}`, 'Grip support'),
+                renderTunePairRow('Toe Angle', 'DEG', `${formatTuneNumber(tune.suspension.frontToe, 2)}`, `${formatTuneNumber(tune.suspension.rearToe, 2)}`, 'Alignment'),
+                '<div class="gt7-sheet-section">Differential Gear</div>',
+                renderTuneSingleRow('Differential', differentialProfile.type, escapeHtml(car.drive)),
+                renderTunePairRow('Initial Torque', 'LV', `${differentialProfile.front.initialTorque}`, `${differentialProfile.rear.initialTorque}`, 'Front / Rear'),
+                renderTunePairRow('Acceleration Sensitivity', 'LV', `${differentialProfile.front.accelerationSensitivity}`, `${differentialProfile.rear.accelerationSensitivity}`, 'Traction lock'),
+                renderTunePairRow('Braking Sensitivity', 'LV', `${differentialProfile.front.brakingSensitivity}`, `${differentialProfile.rear.brakingSensitivity}`, 'Entry lock'),
                 '<div class="gt7-sheet-section">Drivetrain</div>',
-                renderTuneSingleRow('Final Drive', tune.gearRatios.finalDrive.toFixed(2), `${tune.gearRatios.topSpeedKph} km/h`),
-                renderTuneSingleRow('Max Gears', `${tune.gearRatios.maxGear}-speed`, escapeHtml(tune.gearRatios.gearboxStyle)),
-                renderTuneSingleRow('Performance Gearbox', escapeHtml(tune.gearRatios.manualAdjustment), `${tune.gearRatios.topSpeedKph} km/h target`),
-                renderTuneSingleRow('Brake Balance', `${tune.brakes.frontBias}% front`, `Force ${tune.brakes.brakeForce}/10`),
-                renderTuneSingleRow('LSD', `Init ${tune.lsd.initialTorque}`, `Accel ${tune.lsd.accelerationSensitivity} | Decel ${tune.lsd.brakingSensitivity}`)
+                renderTuneSingleRow('Transmission', transmissionLabel, escapeHtml(tune.gearRatios.gearboxStyle)),
+                renderTuneSingleRow('Final Gear', tune.gearRatios.finalDrive.toFixed(2), `${tune.gearRatios.topSpeedKph} km/h target`, 'RATIO'),
+                renderTuneSingleRow('Performance Gearbox', escapeHtml(tune.gearRatios.manualAdjustment), escapeHtml(tune.gearboxMeta.verificationStatus)),
+                renderTuneSingleRow('Gearbox Source', escapeHtml(tune.gearboxMeta.sourceLabel), `${powerToWeight} HP/t`),
+                '<div class="gt7-sheet-section">Brakes</div>',
+                renderTuneSingleRow('Brake Balance', `${tune.brakes.frontBias}% front`, `Force ${tune.brakes.brakeForce}/10`)
             ];
 
             tune.gearRatios.gears.forEach((ratio, index) => {
@@ -4725,12 +6313,20 @@ Zagato | IsoRivolta Zagato Vision Gran Turismo
                 else if (isTopGear) gearNote = 'Top-end overdrive';
                 else if (index >= tune.gearRatios.gears.length - 2) gearNote = 'High-speed carry';
                 else if (index === 2) gearNote = 'Slow-medium corners';
-                rows.splice(rows.length - 2, 0, renderTuneSingleRow(`Gear ${index + 1}`, ratio.toFixed(3), gearNote));
+                rows.splice(rows.length - 3, 0, renderTuneSingleRow(`Gear ${index + 1}`, ratio.toFixed(3), gearNote, 'RATIO'));
             });
 
             if (tune.aero) {
                 rows.push('<div class="gt7-sheet-section">Aerodynamics</div>');
-                rows.push(renderTunePairRow('Downforce', `${tune.aero.front}`, `${tune.aero.rear}`, 'Calculated'));
+                rows.push(renderTunePairRow('Downforce', 'LV', `${tune.aero.front}`, `${tune.aero.rear}`, escapeHtml(tune.aero.profile || 'GT7-style calculated aero target')));
+            }
+
+            if (car.drive === '4WD') {
+                const drivetrainSectionIndex = rows.indexOf('<div class="gt7-sheet-section">Drivetrain</div>');
+                rows.splice(drivetrainSectionIndex, 0,
+                    renderTuneSingleRow('Torque-Vectoring Centre Differential', escapeHtml(differentialProfile.centreDifferential)),
+                    renderTuneSingleRow('Front/Rear Torque Distribution', differentialProfile.torqueSplit)
+                );
             }
 
             return `
@@ -4765,7 +6361,7 @@ Zagato | IsoRivolta Zagato Vision Gran Turismo
                             <div class="gt7-sheet-header">
                                 <div>
                                     <h4>Settings Sheet</h4>
-                                    <strong>Calculated Tune</strong>
+                                    <strong>${escapeHtml(setupTitle)}</strong>
                                 </div>
                                 <div class="gt7-sheet-meta">
                                     <div>${escapeHtml(car.category)} | ${escapeHtml(track.layout)}</div>
@@ -4776,14 +6372,14 @@ Zagato | IsoRivolta Zagato Vision Gran Turismo
                             <div class="gt7-sheet-table">
                                 <div class="gt7-sheet-columns">
                                     <div>Setting</div>
+                                    <div>Unit</div>
                                     <div>Front</div>
                                     <div>Rear</div>
-                                    <div>Value</div>
                                 </div>
                                 ${rows.join('')}
                             </div>
                             <div class="gt7-sheet-callout">
-                                <strong>Setup note:</strong> This layout copies the GT7 car settings screen style, but every value still comes from the built-in tune calculation for the selected car and track.
+                                <strong>Setup note:</strong> ${escapeHtml(tuneStatusLabel)}. ${escapeHtml(tuneSourceLabel)}.
                             </div>
                         </section>
                     </div>
